@@ -256,7 +256,7 @@ function pick(cat, target, preferWP, cute) {
   const best = Math.min(...pool.map(score));
   // rotation: pieces not yet worn this cycle go first, as long as they still suit the weather
   // (coats are worn daily, so they always go by weather alone)
-  const fresh = cat === "outer" ? [] : pool.filter(i => !worn.has(i.id) && score(i) <= best + 1);
+  const fresh = cat === "outer" ? [] : pool.filter(i => !worn.has(i.id) && score(i) <= Math.max(best, 1));
   const cand = fresh.length ? fresh : pool;
   const best2 = Math.min(...cand.map(score));
   const close = cand.filter(i => score(i) <= best2 + 0.5);
