@@ -14,5 +14,6 @@
   {"name": "粉白条纹泡泡袖衬衫", "cat": "top", "warmth": 1, "waterproof": false, "color": "#e9a39a", "file": "pink-striped-shirt.jpg"},
   {"name": "棕色格子半身长裙", "cat": "bottom", "warmth": 2, "waterproof": false, "color": "#8a6a45", "file": "brown-plaid-skirt.jpg"},
   {"name": "银色玛丽珍鞋", "cat": "shoes", "warmth": 2, "waterproof": false, "color": "#c0c0c0", "file": "silver-mary-janes.jpg"},
-  {"name": "lululemon Scuba 藏青拉链卫衣", "cat": "outer", "warmth": 3, "waterproof": false, "color": "#1c2541", "file": "scuba-hoodie.jpg"}
+  {"name": "lululemon Scuba 藏青拉链卫衣", "cat": "outer", "warmth": 3, "waterproof": false, "color": "#1c2541", "file": "scuba-hoodie.jpg"},
+  {"name": "蓝色阔腿卫裤", "cat": "bottom", "warmth": 3, "waterproof": false, "color": "#4a6f9c", "file": "blue-wide-leg-pants.jpg"}
 ]
