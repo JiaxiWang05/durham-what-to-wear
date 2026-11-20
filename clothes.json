@@ -1,1 +1,14 @@
-[]
+[
+  { "name": "黑色刺绣蕾丝边上衣", "cat": "top", "warmth": 1, "waterproof": false, "color": "#1f1f1f" },
+  { "name": "抹茶绿缎面吊带长裙", "cat": "dress", "warmth": 1, "waterproof": false, "color": "#b8d4bd" },
+  { "name": "奶油色蕾丝荷叶边衬衫", "cat": "top", "warmth": 1, "waterproof": false, "color": "#efe6d2" },
+  { "name": "灰格子露肩短上衣", "cat": "top", "warmth": 1, "waterproof": false, "color": "#6b6b5c" },
+  { "name": "摩卡格子泡泡袖上衣", "cat": "top", "warmth": 1, "waterproof": false, "color": "#7a5a3a" },
+  { "name": "米色小狗卫衣", "cat": "top", "warmth": 3, "waterproof": false, "color": "#ece2c8" },
+  { "name": "酒红格子迷你连衣裙", "cat": "dress", "warmth": 2, "waterproof": false, "color": "#8a2e3b" },
+  { "name": "酒红格子立领衬衫", "cat": "top", "warmth": 2, "waterproof": false, "color": "#9c3b47" },
+  { "name": "黑色星星网袜", "cat": "acc", "warmth": 1, "waterproof": false, "color": "#2a2a2a" },
+  { "name": "白色 LA 露肩卫衣", "cat": "top", "warmth": 3, "waterproof": false, "color": "#f4f2ee" },
+  { "name": "灰色坑条V领长袖", "cat": "top", "warmth": 2, "waterproof": false, "color": "#8d8f93" },
+  { "name": "lululemon Scuba 拉链卫衣", "cat": "outer", "warmth": 3, "waterproof": false, "color": "#5c6470" }
+]

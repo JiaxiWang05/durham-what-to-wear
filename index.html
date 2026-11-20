@@ -72,7 +72,7 @@
 </main>
 
 <script>
-const CATS = { outer:"外套", top:"上衣", bottom:"下装", shoes:"鞋", acc:"配饰(帽/围巾/手套)" };
+const CATS = { outer:"外套", top:"上衣", dress:"连衣裙", bottom:"下装", shoes:"鞋", acc:"配饰(帽/围巾/手套/袜)" };
 const WARM = ["", "1 很薄", "2 薄", "3 中等", "4 厚", "5 很厚"];
 let items = [], weather = null, seed = 0;
 
@@ -96,11 +96,21 @@ function loadAll() {
     catch { res([]); }
   });
 }
+// colored tile for catalog items that have no photo yet
+function swatch(color, name) {
+  const light = /^#?(f|e|d)/i.test(color.replace("#", ""));
+  const lines = name.match(/.{1,6}/g) || [""];
+  const text = lines.slice(0, 3).map((l, i) => `<tspan x="100" dy="${i ? 30 : 0}">${esc(l)}</tspan>`).join("");
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" rx="18" fill="${color}"/>` +
+    `<text x="100" y="${100 - (Math.min(lines.length, 3) - 1) * 15}" text-anchor="middle" dominant-baseline="middle" font-size="24" font-family="sans-serif" fill="${light ? "#333" : "#fff"}">${text}</text></svg>`;
+  return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+}
 async function loadRepo() {
   try {
     const r = await fetch("clothes.json", { cache: "no-cache" });
     if (!r.ok) return [];
-    return (await r.json()).map(c => ({ ...c, id: "repo:" + c.file, img: "photos/" + c.file, repo: true }));
+    return (await r.json()).map(c => ({ ...c, id: "repo:" + (c.file || c.name),
+      img: c.file ? "photos/" + c.file : swatch(c.color || "#999", c.name || ""), repo: true }));
   } catch { return []; }
 }
 function save(it) { if (it.repo) return; try { db && tx("readwrite").put(it); } catch {} }
@@ -211,20 +221,25 @@ function recommend() {
   else if (t < 17) { outer = 2; top = 2; bottom = 2; }
   else             { needOuter = wet; outer = 1; top = 1; bottom = 1; }
 
+  // dress day: every other shuffle when dresses exist, or always if there are no bottoms
+  const hasDress = items.some(i => i.cat === "dress"), hasBottom = items.some(i => i.cat === "bottom");
+  const dressDay = hasDress && (!hasBottom || seed % 2 === 1);
   const look = {
     acc: needAcc ? pick("acc", 4) : null,
     outer: needOuter ? pick("outer", outer, wet) : null,
-    top: pick("top", top), bottom: pick("bottom", bottom), shoes: pick("shoes", 3, wet)
+    top: dressDay ? pick("dress", Math.min(top, bottom)) : pick("top", top),
+    bottom: dressDay ? null : pick("bottom", bottom), shoes: pick("shoes", 3, wet)
   };
   const fig = document.getElementById("figure");
   const slot = k => {
-    const it = look[k], label = CATS[k].split("(")[0];
+    const it = look[k], label = (k === "top" && dressDay ? "连衣裙" : CATS[k]).split("(")[0];
     const none = (k==="acc"&&!needAcc) || (k==="outer"&&!needOuter) ? "不需要"+label : "没有"+label;
     return `<div class="slot ${k}">${it ? `<img src="${it.img}" alt="">` : ""}<span>${it ? esc(it.name || label) : none}</span></div>`;
   };
-  fig.innerHTML = slot("acc") + `<div class="upper">${slot("outer")}${slot("top")}</div>` + slot("bottom") + slot("shoes");
+  fig.innerHTML = slot("acc") + `<div class="upper">${slot("outer")}${slot("top")}</div>` + (dressDay ? "" : slot("bottom")) + slot("shoes");
 
   const tips = [];
+  if (dressDay && t < 10) tips.push("穿裙子记得加厚连裤袜。");
   if (!items.length) tips.push("先在下面上传你的衣服照片。");
   tips.push(`白天平均体感约 ${t.toFixed(0)}°C。`);
   if (t < 3) tips.push("很冷，记得围巾手套。");
