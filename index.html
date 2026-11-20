@@ -38,7 +38,8 @@
   .slot img { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; display:block; }
   .slot span { position:absolute; bottom:2px; left:6px; right:6px; font-size:11px; color:var(--muted); background:var(--card); padding:0 4px; border-radius:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .slot .role { position:absolute; top:4px; left:4px; font-size:10px; font-weight:600; color:#fff; background:var(--accent); padding:0 5px; border-radius:4px; }
-  .slot.acc { height:60px; min-height:0; width:60%; justify-self:center; }
+  .accs { display:flex; gap:6px; justify-content:center; }
+  .slot.acc { height:80px; min-height:0; flex:0 1 110px; }
   .slot.bottom { height:170px; width:70%; justify-self:center; }
   .slot.legs { height:110px; width:50%; justify-self:center; }
   .slot.shoes { height:70px; min-height:0; width:60%; justify-self:center; }
@@ -411,7 +412,10 @@ function recommend() {
   const dressDay = hasDress && style !== "sport" && !ctx.home &&
     (!hasBottom || (style === "cute" ? seed % 3 !== 0 : seed % 2 === 1));
   const look = {};
-  look.acc = !ctx.home && tOut < 3 ? pick("acc", 4) : null;
+  // one of each kind of accessory (hat, scarf, gloves) when it's cold out
+  look.acc = !ctx.home && tOut < 3
+    ? ["hat", "scarf", "gloves"].map(k => choose(poolOf(i => i.cat === "acc" && (i.kind || "scarf") === k), () => 0, false)).filter(Boolean)
+    : [];
   look.outer = outerT != null ? pick("outer", outerT, wet) : null;
   look.top = pick(dressDay ? "dress" : "top", inner, false, style);
   look.bottom = dressDay ? null : pick("bottom", inner, false, style);
@@ -440,11 +444,11 @@ function recommend() {
     slot(look.top, "top", layered && (dressDay ? R.dress : R.top), dressDay ? C.dress : C.top),
     look.base && slot(look.base, "base", R.base, C.top)
   ].filter(Boolean);
-  fig.innerHTML = (look.acc ? slot(look.acc, "acc", "", C.acc) : "") +
+  fig.innerHTML = (look.acc.length ? `<div class="accs">${look.acc.map(a => slot(a, "acc", "", C.acc)).join("")}</div>` : "") +
     `<div class="upper${cells.length === 1 ? " single" : ""}">${cells.join("")}</div>` +
     (dressDay ? "" : slot(look.bottom, "bottom", "", C.bottom)) +
     (look.legs ? slot(look.legs, "legs", "", C.legs) : "") + slot(look.shoes, "shoes", "", C.shoes);
-  lastLook = Object.values(look).filter(Boolean);
+  lastLook = Object.values(look).flat().filter(Boolean);
 
   // what the occasion box understood
   const info = document.getElementById("occInfo");

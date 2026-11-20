@@ -28,5 +28,9 @@
   {"name": "Hollister 驼色圆领卫衣", "name_en": "Hollister camel sweatshirt", "cat": "top", "warmth": 3, "waterproof": false, "styles": ["casual"], "color": "#c4a27a", "file": "hollister-sweatshirt.jpg"},
   {"name": "梅赛德斯 F1 车队短袖球衣", "name_en": "Mercedes F1 team jersey", "cat": "top", "warmth": 1, "waterproof": false, "styles": ["sport", "casual"], "color": "#222222", "file": "mercedes-f1-jersey.jpg"},
   {"name": "Alexander Wang 白色短款羽绒服", "name_en": "Alexander Wang white cropped puffer", "cat": "outer", "warmth": 4, "waterproof": false, "styles": ["casual", "cute"], "color": "#f2f2f0", "file": "aw-white-puffer.jpg"},
-  {"name": "玫粉雪纺蕾丝长裙", "name_en": "Rose chiffon lace maxi dress", "cat": "dress", "warmth": 1, "waterproof": false, "styles": ["cute"], "color": "#b84a6e", "file": "rose-chiffon-maxi-dress.png"}
+  {"name": "玫粉雪纺蕾丝长裙", "name_en": "Rose chiffon lace maxi dress", "cat": "dress", "warmth": 1, "waterproof": false, "styles": ["cute"], "color": "#b84a6e", "file": "rose-chiffon-maxi-dress.png"},
+  {"name": "Mulberry 浅蓝羊绒围巾", "name_en": "Mulberry pale blue cashmere scarf", "cat": "acc", "kind": "scarf", "warmth": 4, "waterproof": false, "styles": ["cute", "formal", "casual"], "color": "#8fb3d9", "file": "mulberry-blue-scarf.jpg"},
+  {"name": "黑色皮手套", "name_en": "Black leather gloves", "cat": "acc", "kind": "gloves", "warmth": 3, "waterproof": false, "styles": ["formal", "casual"], "color": "#1a1a1a", "file": "black-leather-gloves.jpg"},
+  {"name": "lululemon 藏青网球裙", "name_en": "lululemon navy tennis skirt", "cat": "bottom", "warmth": 1, "waterproof": false, "styles": ["sport", "cute"], "color": "#1f2433", "file": "navy-tennis-skirt.jpg"},
+  {"name": "lululemon Pace Rival 粉色长款网球裙", "name_en": "lululemon Pace Rival pink skirt (long)", "cat": "bottom", "warmth": 1, "waterproof": false, "styles": ["sport", "cute"], "color": "#f2b8c0", "file": "pink-pace-rival-skirt.jpg"}
 ]

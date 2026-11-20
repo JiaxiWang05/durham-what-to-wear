@@ -25,6 +25,7 @@ Outfit picks from your own wardrobe for today's weather in Durham, UK, with a fl
 - `cat`：outer 外套 / top 上衣 / dress 连衣裙 / bottom 下装 / legs 袜子打底 / shoes 鞋 / acc 配饰(帽/围巾/手套)
 - `warmth`：1 很薄 … 5 很厚
 - `styles`：cute 可爱 / sport 运动 / formal 正式 / casual 日常，用于 Go out 和场合输入
+- `kind`（配饰可选）：hat / scarf / gloves，冷天每种各推荐一件
 - `layer`（可选）：`base` 可以穿在卫衣或连衣裙里面；`mid` 可以穿在羽绒服里面
 - 网页里临时上传的照片只存在当前浏览器（IndexedDB），不会进仓库
 - `weather.py`：命令行查看杜伦天气
