@@ -131,7 +131,7 @@ const T = {
       goout: o => "Go out：里面按室内 15–22°C 搭配，外面" + (o ? "穿上外套。" : "不用外套。"),
       inside: (t, o) => `里面按室内 ${t}°C 搭配` + (o ? "，路上穿外套。" : "。"),
       outdoor: "户外待得久，外套按更冷来选。", home: "在家不用外套。",
-      layer: "叠穿：", tights: "穿裙子记得加厚连裤袜。", empty: "先在下面上传你的衣服照片。",
+      layer: "叠穿：", outside: t => `外面现在体感约 ${t}°C，路上冷的话带件外套。`, empty: "先在下面上传你的衣服照片。",
       avg: t => `白天平均体感约 ${t}°C。`, cold: "很冷，记得围巾手套。",
       rain: r => `降水概率 ${r}%，穿防水外套/鞋或带伞。`, swing: "早晚温差大，选能脱的外套。"
     }
@@ -161,7 +161,7 @@ const T = {
       goout: o => "Go out: dressed for a 15–22°C venue" + (o ? "; wear the coat outside." : "; no coat needed."),
       inside: (t, o) => `Dressed for ${t}°C inside` + (o ? "; wear the coat on the way." : "."),
       outdoor: "Outdoors for a while, so the coat is picked for colder weather.", home: "Staying in, so no coat.",
-      layer: "Layered: ", tights: "With a skirt, wear thick tights.", empty: "Add photos of your clothes below to start.",
+      layer: "Layered: ", outside: t => `It feels about ${t}°C outside, so take a coat for the journey if needed.`, empty: "Add photos of your clothes below to start.",
       avg: t => `Average daytime feels-like about ${t}°C.`, cold: "Very cold: scarf and gloves.",
       rain: r => `${r}% chance of rain: waterproof coat/shoes or an umbrella.`, swing: "Big temperature swing today: pick a coat you can take off."
     }
@@ -347,7 +347,7 @@ function parseOccasion(text) {
   for (const r of RULES) if (r.re.test(text)) { Object.assign(c, r.set); if (r.tag && !c.tags.includes(r.tag)) c.tags.push(r.tag); }
   // a number with a degree marker is read as the indoor temperature, e.g. "20度", "20°C", "20 degrees"
   const m = text.match(/(-?\d{1,2})\s*(?:度|°\s*c?|℃|c\b|degrees?|deg\b)/i);
-  if (m) c.inTemp = +m[1];
+  if (m) { c.inTemp = +m[1]; c.tempGiven = true; }
   else if (c.indoor && c.inTemp == null) c.inTemp = 20;
   if (c.inTemp != null && !c.home) c.tags.push("indoor");
   return c;
@@ -380,14 +380,14 @@ function poolOf(filter, style) {
   if (style && pool.some(i => hasStyle(i, style))) pool = pool.filter(i => hasStyle(i, style));
   return pool;
 }
-function choose(pool, score, rotate) {
+function choose(pool, score, rotate, tol = 0.5) {
   if (!pool.length) return null;
   const best = Math.min(...pool.map(score));
   // rotation: pieces not yet worn this cycle go first, as long as they still suit the weather
   const fresh = rotate ? pool.filter(i => !worn.has(i.id) && score(i) <= Math.max(best, 1)) : [];
   const cand = fresh.length ? fresh : pool;
   const best2 = Math.min(...cand.map(score));
-  const close = cand.filter(i => score(i) <= best2 + 0.5);
+  const close = cand.filter(i => score(i) <= best2 + tol);
   return close[rand(close.length)];
 }
 // `ok` narrows the pool further (style match, pattern clash, disliked pairs) when anything is left after it
@@ -399,8 +399,8 @@ function pick(cat, target, preferWP, style, ok) {
     const f = pool.filter(ok), any = poolOf(i => i.cat === cat).filter(ok);
     if (f.length) pool = f; else if (any.length) pool = any;
   }
-  // coats are worn daily, so they always go by weather alone
-  return choose(pool, score, cat !== "outer");
+  // coats aren't in the wear rotation, but any coat within one warmth level can come up, so it isn't always the same one
+  return choose(pool, score, cat !== "outer", cat === "outer" ? 1 : 0.5);
 }
 // ---------- what goes with what ----------
 const shareStyle = (a, b) => !a || !b || (a.styles || []).some(s => (b.styles || []).includes(s));
@@ -422,7 +422,9 @@ function recommend() {
   const tOut = tAvg - (ctx.outdoor ? 2 : 0) - (ctx.warmer ? 2 : 0);
   const tIn = ctx.inTemp != null ? ctx.inTemp - (ctx.warmer ? 2 : 0) : tOut;
   const wet = weather.rain >= 40 || ctx.rain;
-  let outerT = ctx.home ? null : outerWarmth(tOut);
+  // a temperature typed in the occasion box is the temperature you'll be in, so it decides the coat too
+  const tCoat = ctx.tempGiven ? tIn : tOut;
+  let outerT = ctx.home ? null : outerWarmth(tCoat);
   if (outerT == null && wet && !ctx.home) outerT = 1;
   const inner = innerWarmth(tIn);
 
@@ -437,7 +439,9 @@ function recommend() {
   look.acc = !ctx.home && style !== "sport" && accCold
     ? ["hat", "scarf", "gloves"].map(k => choose(poolOf(i => i.cat === "acc" && (i.kind || "scarf") === k), () => 0, false)).filter(Boolean)
     : [];
-  look.outer = outerT != null ? pick("outer", outerT, wet) : null;
+  // cute outfits prefer a cute coat when one is warm enough
+  look.outer = outerT != null ? pick("outer", outerT, wet, null,
+    style === "cute" ? i => hasStyle(i, "cute") && Math.abs(i.warmth - outerT) <= 1 : null) : null;
   look.top = pick(dressDay ? "dress" : "top", inner, false, style);
   // bottoms share a style with the top and never add a second pattern; shoes match the top/dress and the bottoms
   look.bottom = dressDay ? null : pick("bottom", inner, false, style, i => goesWith(look.top, i));
@@ -445,7 +449,8 @@ function recommend() {
                     i => goesWith(look.top, i) && goesWith(look.bottom, i));
   // tights only go under skirts and dresses, not trousers
   const skirt = dressDay || /裙|skirt/i.test((look.bottom?.name || "") + (look.bottom?.name_en || ""));
-  look.legs = skirt && tOut < 15 && !ctx.home ? pick("legs", 3) : null;
+  // tights are a styling choice, not a default: only in cute outfits with a skirt/dress, about half the time
+  look.legs = skirt && style === "cute" && tOut < 15 && !ctx.home && rand(2) === 0 ? pick("legs", 3) : null;
 
   // layering: only a knit/hoodie under the puffer when it's freezing, and never with a dress.
   // Nothing goes under a sweatshirt: sweatshirts and long-sleeves are both loose, so they aren't worn together.
@@ -485,7 +490,7 @@ function recommend() {
   else if (ctx.inTemp != null) tips.push(P.inside(ctx.inTemp, !!look.outer));
   if (ctx.outdoor) tips.push(P.outdoor);
   if (layered) tips.push(P.layer + [look.mid, look.base].filter(Boolean).map(nm).join(" + ") + (lang === "en" ? "." : "。"));
-  if (dressDay && tOut < 10) tips.push(P.tights);
+  if (ctx.tempGiven && !look.outer && tOut < 12) tips.push(P.outside(Math.round(tAvg)));
   if (!items.length) tips.push(P.empty);
   tips.push(P.avg(Math.round(tAvg)));
   if (look.acc.length) tips.push(P.cold);
