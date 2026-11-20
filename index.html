@@ -416,8 +416,10 @@ function recommend() {
   const dressDay = hasDress && style !== "sport" && !ctx.home &&
     (!hasBottom || (style === "cute" ? seed % 3 !== 0 : seed % 2 === 1));
   const look = {};
-  // one of each kind of accessory (hat, scarf, gloves) when it's cold out
-  look.acc = !ctx.home && tOut < 3
+  // scarf/gloves/hat only when it's properly cold: below 0°C feels-like, or below 3°C if outdoors for a while;
+  // never for staying in or sport
+  const accCold = ctx.outdoor ? tOut < 3 : tOut < 0;
+  look.acc = !ctx.home && style !== "sport" && accCold
     ? ["hat", "scarf", "gloves"].map(k => choose(poolOf(i => i.cat === "acc" && (i.kind || "scarf") === k), () => 0, false)).filter(Boolean)
     : [];
   look.outer = outerT != null ? pick("outer", outerT, wet) : null;
@@ -471,7 +473,7 @@ function recommend() {
   if (dressDay && tOut < 10) tips.push(P.tights);
   if (!items.length) tips.push(P.empty);
   tips.push(P.avg(Math.round(tAvg)));
-  if (tOut < 3 && !ctx.home) tips.push(P.cold);
+  if (look.acc.length) tips.push(P.cold);
   if (wet) tips.push(P.rain(weather.rain));
   if (weather.feelMax - weather.feelMin > 6 && !ctx.home) tips.push(P.swing);
   document.getElementById("tips").textContent = tips.join(" ");
