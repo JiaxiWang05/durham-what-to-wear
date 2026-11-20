@@ -452,10 +452,13 @@ function recommend() {
   // tights are a styling choice, not a default: only in cute outfits with a skirt/dress, about half the time
   look.legs = skirt && style === "cute" && tOut < 15 && !ctx.home && rand(2) === 0 ? pick("legs", 3) : null;
 
-  // layering: only a knit/hoodie under the puffer when it's freezing, and never with a dress.
-  // Nothing goes under a sweatshirt: sweatshirts and long-sleeves are both loose, so they aren't worn together.
+  // layering, never with a dress: a knit/hoodie under the puffer when it's freezing, and a T-shirt under a
+  // sweatshirt when the inside layers need warmth. Only items tagged layer "base" (tees) go under a sweatshirt;
+  // long-sleeves are loose like the sweatshirts, so they're never paired.
   look.mid = !dressDay && tOut < 0 && look.outer?.warmth >= 4 ? pickLayer("mid", [look.outer], null) : null;
-  look.base = null;
+  const t0 = look.top;
+  const sweatCold = !dressDay && t0 && t0.warmth >= 3 && inner >= 3;
+  look.base = sweatCold ? pickLayer("base", [t0], null, i => !(i.pattern && (t0.pattern || look.bottom?.pattern))) : null;
 
   const fig = document.getElementById("figure");
   const slot = (it, cls, role, label) =>

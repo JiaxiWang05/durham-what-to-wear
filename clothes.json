@@ -42,5 +42,5 @@
   {"name": "碎花雪纺荷叶边长袖上衣", "name_en": "Floral chiffon ruffle blouse", "cat": "top", "warmth": 1, "waterproof": false, "styles": ["cute"], "pattern": true, "color": "#e8c4b0", "file": "floral-chiffon-blouse.jpg"},
   {"name": "白色亚麻阔腿裤", "name_en": "White linen wide-leg trousers", "cat": "bottom", "warmth": 1, "waterproof": false, "styles": ["casual", "cute"], "color": "#f3f1ea", "file": "white-linen-pants.jpg"},
   {"name": "Nike 黑色抓绒运动裤", "name_en": "Nike black fleece joggers", "cat": "bottom", "warmth": 3, "waterproof": false, "styles": ["sport", "casual"], "color": "#111111", "file": "nike-black-joggers.jpg"},
-  {"name": "AMI 红色撞色边短袖T恤", "name_en": "AMI red ringer T-shirt", "cat": "top", "warmth": 1, "waterproof": false, "styles": ["casual", "cute"], "color": "#b5121b", "file": "ami-red-ringer-tee.jpg"}
+  {"name": "AMI 红色撞色边短袖T恤", "name_en": "AMI red ringer T-shirt", "cat": "top", "warmth": 1, "waterproof": false, "styles": ["casual", "cute"], "color": "#b5121b", "file": "ami-red-ringer-tee.jpg", "layer": "base"}
 ]

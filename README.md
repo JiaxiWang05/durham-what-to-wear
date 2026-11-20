@@ -10,7 +10,7 @@ Outfit picks from your own wardrobe for today's weather in Durham, UK, with a fl
 - 外套会在保暖度相近的几件里轮换；在场合里写了温度（如「20度」），外套也按这个温度选
 - 丝袜只在可爱风穿裙子时偶尔出现
 - **场合输入**：写下要去哪（中文或英文），按关键词调整推荐，例如「约会 室内20度」「去健身房」「面试」「圣诞市场 户外」「在家」「dinner, I feel the cold」
-- **叠穿**：零下时羽绒服里加一件中层（开衫或 Scuba）。卫衣里不加长袖；穿连衣裙时只配外套
+- **叠穿**：零下时羽绒服里加一件中层（开衫或 Scuba）；冷天卫衣里可以加一件 T 恤（不加长袖）；穿连衣裙时只配外套
 - **待洗**：每件衣服可以标「待洗」暂时不推荐，洗好再放回
 - **轮换**：点「今天就穿这套 ✓」记录已穿；没穿过的优先，一类衣服全穿过一轮后重新开始（外套除外）
 - **不喜欢这套 👎**：记住这套里上衣/下装/鞋的两两组合，以后不再这样配
@@ -31,6 +31,6 @@ Outfit picks from your own wardrobe for today's weather in Durham, UK, with a fl
 - `styles`：cute 可爱 / sport 运动 / formal 正式 / casual 日常，用于 Go out 和场合输入
 - `pattern`（可选）：true 表示格子/条纹/印花，上衣和下装最多一件有花纹
 - `kind`（配饰可选）：hat / scarf / gloves，冷天每种各推荐一件
-- `layer`（可选）：`mid` 表示可以穿在羽绒服里面
+- `layer`（可选）：`mid` 可以穿在羽绒服里面；`base` 可以穿在卫衣里面（只给 T 恤）
 - 网页里临时上传的照片只存在当前浏览器（IndexedDB），不会进仓库
 - `weather.py`：命令行查看杜伦天气
