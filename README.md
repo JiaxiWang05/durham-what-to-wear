@@ -10,6 +10,7 @@
   [{"file": "coat1.jpg", "cat": "outer", "warmth": 4, "waterproof": true, "name": "绿色外套"}]
   ```
   `cat`：outer 外套 / top 上衣 / dress 连衣裙 / bottom 下装 / legs 袜子打底 / shoes 鞋 / acc 配饰(帽/围巾/手套)
+  `cute`：true 表示适合 Go out 模式（可爱风，室内约 15°C 搭配）
 - 网页里临时上传的照片只存在当前浏览器（IndexedDB），不会进仓库
 - 预览：外套在后、上衣叠在前，下面是裤子和鞋，只是平铺示意，不是真人试穿
 - `weather.py`：命令行查看杜伦天气

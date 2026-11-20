@@ -58,6 +58,10 @@
       <h2>今日推荐</h2>
       <button class="ghost" id="shuffle">换一套</button>
     </div>
+    <div class="row mode" style="margin-top:8px">
+      <button class="ghost" data-mode="daily">日常</button>
+      <button class="ghost" data-mode="goout">Go out ✨</button>
+    </div>
     <div class="figure" id="figure"></div>
     <div id="tips" class="muted"></div>
   </section>
@@ -210,8 +214,12 @@ function rand(n) {
   x ^= x + Math.imul(x ^ (x >>> 7), 61 | x);
   return Math.floor((((x ^ (x >>> 14)) >>> 0) / 4294967296) * n);
 }
-function pick(cat, target, preferWP) {
-  const pool = items.filter(i => i.cat === cat);
+// "go out" mode: cute pieces, dressed for a ~15°C indoor venue; the coat still follows the real weather
+let mode = "daily";
+try { mode = localStorage.getItem("mode") === "goout" ? "goout" : "daily"; } catch {}
+function pick(cat, target, preferWP, cute) {
+  let pool = items.filter(i => i.cat === cat);
+  if (cute && pool.some(i => i.cute)) pool = pool.filter(i => i.cute);
   if (!pool.length) return null;
   const score = i => Math.abs(i.warmth - target) + (preferWP && !i.waterproof ? 1.5 : 0);
   const best = Math.min(...pool.map(score));
@@ -230,15 +238,17 @@ function recommend() {
   else if (t < 17) { outer = 2; top = 2; bottom = 2; }
   else             { needOuter = wet; outer = 1; top = 1; bottom = 1; }
 
-  // dress day: every other shuffle when dresses exist, or always if there are no bottoms
+  const goOut = mode === "goout";
+  if (goOut) { top = 2; bottom = 2; }   // inner layers for ~15°C indoors
+  // dress day: every other shuffle when dresses exist (2 in 3 when going out), or always if there are no bottoms
   const hasDress = items.some(i => i.cat === "dress"), hasBottom = items.some(i => i.cat === "bottom");
-  const dressDay = hasDress && (!hasBottom || seed % 2 === 1);
+  const dressDay = hasDress && (!hasBottom || (goOut ? seed % 3 !== 0 : seed % 2 === 1));
   const look = {
     acc: needAcc ? pick("acc", 4) : null,
     outer: needOuter ? pick("outer", outer, wet) : null,
-    top: dressDay ? pick("dress", Math.min(top, bottom)) : pick("top", top),
-    bottom: dressDay ? null : pick("bottom", bottom),
-    shoes: pick("shoes", 3, wet)
+    top: dressDay ? pick("dress", Math.min(top, bottom), false, goOut) : pick("top", top, false, goOut),
+    bottom: dressDay ? null : pick("bottom", bottom, false, goOut),
+    shoes: pick("shoes", goOut ? 2 : 3, wet, goOut)
   };
   // tights only go under skirts and dresses, not trousers
   const skirt = dressDay || /裙|skirt/i.test(look.bottom?.name || "");
@@ -255,6 +265,7 @@ function recommend() {
     (dressDay ? "" : slot("bottom")) + (look.legs ? slot("legs") : "") + slot("shoes");
 
   const tips = [];
+  if (goOut) tips.push("Go out：里面按室内 15°C 搭配，外面" + (needOuter ? "穿上外套。" : "不用外套。"));
   if (dressDay && t < 10) tips.push("穿裙子记得加厚连裤袜。");
   if (!items.length) tips.push("先在下面上传你的衣服照片。");
   tips.push(`白天平均体感约 ${t.toFixed(0)}°C。`);
@@ -264,6 +275,18 @@ function recommend() {
   document.getElementById("tips").textContent = tips.join(" ");
 }
 document.getElementById("shuffle").onclick = () => { seed++; recommend(); };
+function setMode(m) {
+  mode = m;
+  try { localStorage.setItem("mode", m); } catch {}
+  document.querySelectorAll(".mode button").forEach(b => {
+    const on = b.dataset.mode === m;
+    b.style.background = on ? "var(--accent)" : "transparent";
+    b.style.color = on ? "#fff" : "var(--accent)";
+  });
+  recommend();
+}
+document.querySelectorAll(".mode button").forEach(b => b.onclick = () => setMode(b.dataset.mode));
+setMode(mode);
 
 (async () => { await openDB(); items = [...await loadRepo(), ...await loadAll()]; seed = new Date().getDate(); renderItems(); getWeather(); })();
 </script>
