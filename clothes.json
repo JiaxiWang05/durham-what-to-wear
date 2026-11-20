@@ -8,8 +8,11 @@
   {"name": "酒红格子迷你连衣裙", "cat": "dress", "warmth": 2, "waterproof": false, "color": "#8a2e3b", "file": "burgundy-plaid-dress.jpg"},
   {"name": "酒红格子立领衬衫", "cat": "top", "warmth": 2, "waterproof": false, "color": "#9c3b47", "file": "burgundy-plaid-blouse.jpg"},
   {"name": "黑色星星网袜", "cat": "acc", "warmth": 1, "waterproof": false, "color": "#2a2a2a", "file": "star-fishnet-tights.jpg"},
-  {"name": "白色 LA 露肩卫衣", "cat": "top", "warmth": 3, "waterproof": false, "color": "#f4f2ee", "file": "la-sweatshirt.jpg"},
-  {"name": "灰色坑条V领长袖", "cat": "top", "warmth": 2, "waterproof": false, "color": "#8d8f93", "file": "grey-rib-tee.jpg"},
-  {"name": "藏青格纹收褶中长连衣裙", "cat": "dress", "warmth": 2, "waterproof": false, "color": "#1f2a44", "file": "navy-midi-dress.jpg"},
+  {"name": "灰色 LA 露肩卫衣", "cat": "top", "warmth": 3, "waterproof": false, "color": "#b9b9b9", "file": "la-sweatshirt.jpg"},
+  {"name": "灰色坑条亨利领长袖", "cat": "top", "warmth": 2, "waterproof": false, "color": "#8d8f93", "file": "grey-rib-tee.jpg"},
+  {"name": "藏青细条纹中长连衣裙", "cat": "dress", "warmth": 2, "waterproof": false, "color": "#1f2a44", "file": "navy-midi-dress.jpg"},
+  {"name": "粉白条纹泡泡袖衬衫", "cat": "top", "warmth": 1, "waterproof": false, "color": "#e9a39a", "file": "pink-striped-shirt.jpg"},
+  {"name": "棕色格子半身长裙", "cat": "bottom", "warmth": 2, "waterproof": false, "color": "#8a6a45", "file": "brown-plaid-skirt.jpg"},
+  {"name": "银色玛丽珍鞋", "cat": "shoes", "warmth": 2, "waterproof": false, "color": "#c0c0c0", "file": "silver-mary-janes.jpg"},
   {"name": "lululemon Scuba 藏青拉链卫衣", "cat": "outer", "warmth": 3, "waterproof": false, "color": "#1c2541"}
 ]
