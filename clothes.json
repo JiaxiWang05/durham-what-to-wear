@@ -36,5 +36,6 @@
   {"name": "深棕色阔腿卫裤", "name_en": "Chocolate wide-leg sweatpants", "cat": "bottom", "warmth": 3, "waterproof": false, "styles": ["casual", "sport"], "color": "#4a3530", "file": "brown-wide-sweatpants.jpg"},
   {"name": "薄荷绿刺绣蕾丝泡泡袖胸衣上衣", "name_en": "Sage embroidered lace puff-sleeve corset top", "cat": "top", "warmth": 1, "waterproof": false, "styles": ["cute"], "color": "#9cc7b4", "pattern": true},
   {"name": "Canterbury 藏青运动长裤", "name_en": "Canterbury navy track pants", "cat": "bottom", "warmth": 2, "waterproof": false, "styles": ["sport", "casual"], "color": "#1f2d5c", "file": "canterbury-navy-track-pants.jpg"},
-  {"name": "燕麦色阔腿卫裤", "name_en": "Oatmeal wide-leg sweatpants", "cat": "bottom", "warmth": 3, "waterproof": false, "styles": ["casual", "sport"], "color": "#e8e2d6", "file": "oatmeal-wide-sweatpants.jpg"}
+  {"name": "燕麦色阔腿卫裤", "name_en": "Oatmeal wide-leg sweatpants", "cat": "bottom", "warmth": 3, "waterproof": false, "styles": ["casual", "sport"], "color": "#e8e2d6", "file": "oatmeal-wide-sweatpants.jpg"},
+  {"name": "橄榄绿坑条修身长袖", "name_en": "Olive ribbed fitted long-sleeve", "cat": "top", "warmth": 2, "waterproof": false, "styles": ["casual", "cute"], "layer": "base", "color": "#8f9a6e", "file": "olive-rib-long-sleeve.jpg"}
 ]
