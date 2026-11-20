@@ -394,8 +394,9 @@ function pick(cat, target, preferWP, style) {
   // coats are worn daily, so they always go by weather alone
   return choose(poolOf(i => i.cat === cat, style), score, cat !== "outer");
 }
+// `layer` may be one role or a list: "mid" (under a puffer), "base" (under a sweatshirt), "dress" (under a dress)
 function pickLayer(role, exclude, style) {
-  return choose(poolOf(i => i.layer === role && !exclude.includes(i), style), () => 0, true);
+  return choose(poolOf(i => [].concat(i.layer || []).includes(role) && !exclude.includes(i), style), () => 0, true);
 }
 
 function recommend() {
@@ -427,13 +428,14 @@ function recommend() {
   const skirt = dressDay || /裙|skirt/i.test((look.bottom?.name || "") + (look.bottom?.name_en || ""));
   look.legs = skirt && tOut < 15 && !ctx.home ? pick("legs", 3) : null;
 
-  // layering: a knit/hoodie under the coat when it's freezing; a long-sleeve under a light dress
-  // or under a sweatshirt (collar peeking out) when the inside layers need warmth
-  look.mid = tOut < 0 && look.outer?.warmth >= 4 ? pickLayer("mid", [look.outer], null) : null;
+  // layering: a knit/hoodie under the coat when it's freezing (never with a dress: just coat over dress);
+  // a white long-sleeve shirt under a light dress, or a shirt/long-sleeve under a sweatshirt (collar peeking out)
+  look.mid = !dressDay && tOut < 0 && look.outer?.warmth >= 4 ? pickLayer("mid", [look.outer], null) : null;
   const t0 = look.top;
   const dressCold = dressDay && t0 && t0.warmth <= 2 && (ctx.inTemp == null ? tOut < 10 : tIn < 15);
   const sweatCold = !dressDay && t0 && t0.warmth >= 3 && inner >= 3;
-  look.base = (dressCold || sweatCold) ? pickLayer("base", [t0], style === "sport" ? null : style) : null;
+  look.base = dressCold ? pickLayer("dress", [t0], null)
+            : sweatCold ? pickLayer("base", [t0], style === "sport" ? null : style) : null;
 
   const fig = document.getElementById("figure");
   const slot = (it, cls, role, label) =>
