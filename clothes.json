@@ -21,5 +21,6 @@
   {"name": "灰色 Polo 华夫格长袖", "cat": "top", "warmth": 2, "waterproof": false, "color": "#a9a9a9", "file": "grey-polo-waffle-tee.jpg"},
   {"name": "lululemon Align 蔓越莓红打底裤", "cat": "bottom", "warmth": 2, "waterproof": false, "color": "#8a2420", "file": "cranberry-align-leggings.jpg"},
   {"name": "Stronger 米色喇叭瑜伽裤", "cat": "bottom", "warmth": 2, "waterproof": false, "color": "#e6dcd2", "file": "beige-flared-leggings.jpg"},
-  {"name": "Gymshark 浅粉喇叭瑜伽裤", "cat": "bottom", "warmth": 2, "waterproof": false, "color": "#e6c9d8", "file": "pink-flared-leggings.jpg"}
+  {"name": "Gymshark 浅粉喇叭瑜伽裤", "cat": "bottom", "warmth": 2, "waterproof": false, "color": "#e6c9d8", "file": "pink-flared-leggings.jpg"},
+  {"name": "Nike GT Hustle 3 灰蓝运动鞋", "cat": "shoes", "warmth": 3, "waterproof": false, "color": "#6b7a96", "file": "nike-gt-hustle-3.jpg"}
 ]
