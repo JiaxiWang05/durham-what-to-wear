@@ -409,7 +409,8 @@ let disliked = loadSet("disliked");   // pairs the 👎 button ruled out
 const goesWith = (a, b) => !a || !b || (shareStyle(a, b) && !(a.pattern && b.pattern) && !disliked.has(pairKey(a, b)));
 // `layer` may be one role or a list: "mid" (under a puffer), "base" (under a sweatshirt), "dress" (under a dress)
 function pickLayer(role, exclude, style, ok) {
-  let pool = poolOf(i => [].concat(i.layer || []).includes(role) && !exclude.includes(i), style);
+  // every T-shirt (kind "tee") can go under a sweatshirt
+  let pool = poolOf(i => ([].concat(i.layer || []).includes(role) || (role === "base" && i.kind === "tee")) && !exclude.includes(i), style);
   if (ok) pool = pool.filter(ok);   // layers are optional, so if nothing fits the rules, skip the layer
   return choose(pool, () => 0, true);
 }

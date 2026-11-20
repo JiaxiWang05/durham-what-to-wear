@@ -26,7 +26,7 @@
   {"name": "波司登白色中长款鹅绒服", "name_en": "Bosideng white mid-length down coat", "cat": "outer", "warmth": 5, "waterproof": false, "styles": ["casual", "formal"], "color": "#f1eee8", "file": "bosideng-down-coat.jpg"},
   {"name": "灰色粗针织拉链开衫", "name_en": "Grey chunky knit zip cardigan", "cat": "outer", "warmth": 3, "waterproof": false, "styles": ["casual", "formal"], "layer": "mid", "color": "#9a9a9a", "file": "grey-knit-zip-cardigan.jpg"},
   {"name": "Hollister 驼色圆领卫衣", "name_en": "Hollister camel sweatshirt", "cat": "top", "warmth": 3, "waterproof": false, "styles": ["casual"], "color": "#c4a27a", "file": "hollister-sweatshirt.jpg"},
-  {"name": "梅赛德斯 F1 车队短袖球衣", "name_en": "Mercedes F1 team jersey", "cat": "top", "warmth": 1, "waterproof": false, "styles": ["sport", "casual"], "color": "#222222", "file": "mercedes-f1-jersey.jpg", "pattern": true},
+  {"name": "梅赛德斯 F1 车队短袖球衣", "name_en": "Mercedes F1 team jersey", "cat": "top", "warmth": 1, "waterproof": false, "styles": ["sport", "casual"], "color": "#222222", "file": "mercedes-f1-jersey.jpg", "pattern": true, "kind": "tee"},
   {"name": "Alexander Wang 白色短款羽绒服", "name_en": "Alexander Wang white cropped puffer", "cat": "outer", "warmth": 4, "waterproof": false, "styles": ["casual", "cute"], "color": "#f2f2f0", "file": "aw-white-puffer.jpg"},
   {"name": "玫粉雪纺蕾丝长裙", "name_en": "Rose chiffon lace maxi dress", "cat": "dress", "warmth": 1, "waterproof": false, "styles": ["cute"], "color": "#b84a6e", "file": "rose-chiffon-maxi-dress.png"},
   {"name": "Mulberry 浅蓝羊绒围巾", "name_en": "Mulberry pale blue cashmere scarf", "cat": "acc", "kind": "scarf", "warmth": 4, "waterproof": false, "styles": ["cute", "formal", "casual"], "color": "#8fb3d9", "file": "mulberry-blue-scarf.jpg"},
@@ -42,5 +42,5 @@
   {"name": "碎花雪纺荷叶边长袖上衣", "name_en": "Floral chiffon ruffle blouse", "cat": "top", "warmth": 1, "waterproof": false, "styles": ["cute"], "pattern": true, "color": "#e8c4b0", "file": "floral-chiffon-blouse.jpg"},
   {"name": "白色亚麻阔腿裤", "name_en": "White linen wide-leg trousers", "cat": "bottom", "warmth": 1, "waterproof": false, "styles": ["casual", "cute"], "color": "#f3f1ea", "file": "white-linen-pants.jpg"},
   {"name": "Nike 黑色抓绒运动裤", "name_en": "Nike black fleece joggers", "cat": "bottom", "warmth": 3, "waterproof": false, "styles": ["sport", "casual"], "color": "#111111", "file": "nike-black-joggers.jpg"},
-  {"name": "AMI 红色撞色边短袖T恤", "name_en": "AMI red ringer T-shirt", "cat": "top", "warmth": 1, "waterproof": false, "styles": ["casual", "cute"], "color": "#b5121b", "file": "ami-red-ringer-tee.jpg", "layer": "base"}
+  {"name": "AMI 红色撞色边短袖T恤", "name_en": "AMI red ringer T-shirt", "cat": "top", "warmth": 1, "waterproof": false, "styles": ["casual", "cute"], "color": "#b5121b", "file": "ami-red-ringer-tee.jpg", "kind": "tee"}
 ]

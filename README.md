@@ -30,7 +30,7 @@ Outfit picks from your own wardrobe for today's weather in Durham, UK, with a fl
 - `warmth`：1 很薄 … 5 很厚
 - `styles`：cute 可爱 / sport 运动 / formal 正式 / casual 日常，用于 Go out 和场合输入
 - `pattern`（可选）：true 表示格子/条纹/印花，上衣和下装最多一件有花纹
-- `kind`（配饰可选）：hat / scarf / gloves，冷天每种各推荐一件
-- `layer`（可选）：`mid` 可以穿在羽绒服里面；`base` 可以穿在卫衣里面（只给 T 恤）
+- `layer`（可选）：`mid` 可以穿在羽绒服里面
+- `kind`：配饰写 hat / scarf / gloves；T 恤写 `tee`，所有 T 恤都可以穿在卫衣里面
 - 网页里临时上传的照片只存在当前浏览器（IndexedDB），不会进仓库
 - `weather.py`：命令行查看杜伦天气
