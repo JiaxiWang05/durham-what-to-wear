@@ -11,7 +11,9 @@ Outfit picks from your own wardrobe for today's weather in Durham, UK, with a fl
 - **叠穿**：零下时外套里加一件中层；冷天卫衣里加衬衫/长袖，薄连衣裙里加长袖
 - **待洗**：每件衣服可以标「待洗」暂时不推荐，洗好再放回
 - **轮换**：点「今天就穿这套 ✓」记录已穿；没穿过的优先，一类衣服全穿过一轮后重新开始（外套除外）
-- 待洗和已穿记录只存在当前浏览器
+- **不喜欢这套 👎**：记住这套里上衣/下装/鞋的两两组合，以后不再这样配
+- 搭配规则：下装和鞋要和上衣有共同风格；上衣和下装最多一件有花纹
+- 待洗、已穿、不喜欢的记录只存在当前浏览器
 
 ## clothes.json
 
@@ -25,6 +27,7 @@ Outfit picks from your own wardrobe for today's weather in Durham, UK, with a fl
 - `cat`：outer 外套 / top 上衣 / dress 连衣裙 / bottom 下装 / legs 袜子打底 / shoes 鞋 / acc 配饰(帽/围巾/手套)
 - `warmth`：1 很薄 … 5 很厚
 - `styles`：cute 可爱 / sport 运动 / formal 正式 / casual 日常，用于 Go out 和场合输入
+- `pattern`（可选）：true 表示格子/条纹/印花，上衣和下装最多一件有花纹
 - `kind`（配饰可选）：hat / scarf / gloves，冷天每种各推荐一件
 - `layer`（可选）：`base` 穿在卫衣里面；`mid` 穿在羽绒服里面。穿连衣裙时只配外套，不叠穿
 - 网页里临时上传的照片只存在当前浏览器（IndexedDB），不会进仓库

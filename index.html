@@ -87,7 +87,8 @@
     <div id="occInfo" class="muted"></div>
     <div class="figure" id="figure"></div>
     <div class="row" style="justify-content:center; margin-top:10px">
-      <button id="wear" data-t="wear"></button><span id="wearMsg" class="muted"></span>
+      <button id="wear" data-t="wear"></button>
+      <button class="ghost" id="nope" data-t="nope"></button><span id="wearMsg" class="muted"></span>
     </div>
     <div id="tips" class="muted"></div>
   </section>
@@ -109,7 +110,7 @@ const T = {
     title: "杜伦今天穿什么", rec: "今日推荐", shuffle: "换一套", daily: "日常", goout: "Go out ✨",
     occPh: "穿去哪？比如：周六约会，室内大概 20 度", occGo: "推荐",
     examples: ["约会 室内20度", "去健身房", "上课", "面试", "圣诞市场 户外", "在家"],
-    wear: "今天就穿这套 ✓", worn: "已记下 ✓", reset: c => ` ${c}全部穿过一轮，重新开始。`, sep: "、",
+    wear: "今天就穿这套 ✓", nope: "不喜欢这套 👎", noped: "记住了，这几件不会再这样配。", worn: "已记下 ✓", reset: c => ` ${c}全部穿过一轮，重新开始。`, sep: "、",
     wardrobe: "我的衣服库", add: "+ 添加照片",
     note: "仓库里的衣服来自 GitHub 的 clothes.json（公开）。这里新加的照片只存在这个浏览器里。",
     count: (n, off) => `(${n} 件${off ? `，${off} 件待洗` : ""})`,
@@ -139,7 +140,7 @@ const T = {
     title: "Durham: what to wear today", rec: "Today's outfit", shuffle: "Shuffle", daily: "Everyday", goout: "Go out ✨",
     occPh: "Where are you going? e.g. Saturday date, about 20°C inside", occGo: "Suggest",
     examples: ["date, 20°C inside", "gym", "lecture", "interview", "Christmas market, outdoors", "staying in"],
-    wear: "Wearing this today ✓", worn: "Saved ✓", reset: c => ` Every ${c} has been worn once, starting a new round.`, sep: ", ",
+    wear: "Wearing this today ✓", nope: "Not this one 👎", noped: "Got it, these won't be paired again.", worn: "Saved ✓", reset: c => ` Every ${c} has been worn once, starting a new round.`, sep: ", ",
     wardrobe: "My wardrobe", add: "+ Add photos",
     note: "Clothes from the repo come from clothes.json on GitHub (public). Photos you add here stay in this browser only.",
     count: (n, off) => `(${n} items${off ? `, ${off} in the wash` : ""})`,
@@ -389,11 +390,19 @@ function choose(pool, score, rotate) {
   const close = cand.filter(i => score(i) <= best2 + 0.5);
   return close[rand(close.length)];
 }
-function pick(cat, target, preferWP, style) {
+// `ok` narrows the pool further (style match, pattern clash, disliked pairs) when anything is left after it
+function pick(cat, target, preferWP, style, ok) {
   const score = i => Math.abs(i.warmth - target) + (preferWP && !i.waterproof ? 1.5 : 0);
+  let pool = poolOf(i => i.cat === cat, style);
+  if (ok) { const f = pool.filter(ok); if (f.length) pool = f; }
   // coats are worn daily, so they always go by weather alone
-  return choose(poolOf(i => i.cat === cat, style), score, cat !== "outer");
+  return choose(pool, score, cat !== "outer");
 }
+// ---------- what goes with what ----------
+const shareStyle = (a, b) => !a || !b || (a.styles || []).some(s => (b.styles || []).includes(s));
+const pairKey = (a, b) => [a.id, b.id].sort().join("|");
+let disliked = loadSet("disliked");   // pairs the 👎 button ruled out
+const goesWith = (a, b) => !a || !b || (shareStyle(a, b) && !(a.pattern && b.pattern) && !disliked.has(pairKey(a, b)));
 // `layer` may be one role or a list: "mid" (under a puffer), "base" (under a sweatshirt), "dress" (under a dress)
 function pickLayer(role, exclude, style) {
   return choose(poolOf(i => [].concat(i.layer || []).includes(role) && !exclude.includes(i), style), () => 0, true);
@@ -424,8 +433,10 @@ function recommend() {
     : [];
   look.outer = outerT != null ? pick("outer", outerT, wet) : null;
   look.top = pick(dressDay ? "dress" : "top", inner, false, style);
-  look.bottom = dressDay ? null : pick("bottom", inner, false, style);
-  look.shoes = pick("shoes", style === "cute" || style === "formal" ? 2 : 3, wet, style);
+  // bottoms share a style with the top and never add a second pattern; shoes match the top/dress and the bottoms
+  look.bottom = dressDay ? null : pick("bottom", inner, false, style, i => goesWith(look.top, i));
+  look.shoes = pick("shoes", style === "cute" || style === "formal" ? 2 : 3, wet, style,
+                    i => goesWith(look.top, i) && goesWith(look.bottom, i));
   // tights only go under skirts and dresses, not trousers
   const skirt = dressDay || /裙|skirt/i.test((look.bottom?.name || "") + (look.bottom?.name_en || ""));
   look.legs = skirt && tOut < 15 && !ctx.home ? pick("legs", 3) : null;
@@ -481,6 +492,14 @@ function recommend() {
 
 // ---------- controls ----------
 document.getElementById("shuffle").onclick = () => { seed++; recommend(); };
+// 👎: remember every pairing among the main pieces of this outfit so they aren't put together again
+document.getElementById("nope").onclick = () => {
+  const main = lastLook.filter(i => ["top", "dress", "bottom", "shoes"].includes(i.cat));
+  for (let a = 0; a < main.length; a++) for (let b = a + 1; b < main.length; b++) disliked.add(pairKey(main[a], main[b]));
+  saveSet("disliked", disliked);
+  seed++; recommend();
+  document.getElementById("wearMsg").textContent = L().noped;
+};
 document.getElementById("wear").onclick = () => {
   const ids = lastLook.map(i => i.id);
   ids.forEach(id => worn.add(id));
