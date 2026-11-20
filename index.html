@@ -22,15 +22,19 @@
   .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
   #weather b { font-size: 26px; }
   /* outfit preview: items stacked on a body-shaped column */
-  .figure { position:relative; margin: 8px auto 0; width: 260px; display:grid; gap:6px;
-            grid-template-columns: 1fr 1fr; grid-template-areas: "acc acc" "outer top" "bottom bottom" "shoes shoes"; }
+  .figure { margin: 8px auto 0; width: 260px; display:grid; gap:6px; }
+  .upper { position:relative; height:200px; }
+  .upper .slot { position:absolute; }
+  .upper .outer { inset:0; }
+  .upper .top { left:26%; width:48%; top:14%; bottom:0; box-shadow:0 2px 8px rgba(0,0,0,.25); border-style:solid; }
   .slot { background:var(--bg); border:1px dashed var(--line); border-radius:10px; min-height:90px;
           display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative; }
   .slot img { width:100%; height:100%; object-fit:cover; display:block; }
   .slot span { position:absolute; bottom:2px; left:6px; font-size:11px; color:var(--muted); background:var(--card); padding:0 4px; border-radius:4px; }
-  .slot.acc { grid-area:acc; min-height:60px; } .slot.outer { grid-area:outer; min-height:150px; }
-  .slot.top { grid-area:top; min-height:150px; } .slot.bottom { grid-area:bottom; min-height:160px; width:70%; justify-self:center; }
-  .slot.shoes { grid-area:shoes; min-height:70px; width:60%; justify-self:center; }
+  .slot.acc { min-height:60px; width:60%; justify-self:center; }
+  .slot.bottom { min-height:170px; width:70%; justify-self:center; }
+  .slot.shoes { min-height:70px; width:60%; justify-self:center; }
+  .tag { font-size:11px; color:var(--muted); }
   #tips { margin-top:10px; }
   .grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(140px,1fr)); gap:10px; }
   .item { border:1px solid var(--line); border-radius:10px; overflow:hidden; background:var(--bg); }
@@ -62,7 +66,7 @@
       <h2>我的衣服库 <span class="muted" id="count"></span></h2>
       <label class="up"><input type="file" id="file" accept="image/*" multiple><button type="button" onclick="this.previousElementSibling.click()">+ 添加照片</button></label>
     </div>
-    <p class="muted">每件衣服拍一张平铺照，上传后选类别和保暖度。照片只存在这个浏览器里，不会上传。</p>
+    <p class="muted">标“仓库”的衣服来自 GitHub 仓库的 clothes.json（公开）。这里新加的照片只存在这个浏览器里。</p>
     <div class="grid" id="items"></div>
   </section>
 </main>
@@ -92,7 +96,14 @@ function loadAll() {
     catch { res([]); }
   });
 }
-function save(it) { try { db && tx("readwrite").put(it); } catch {} }
+async function loadRepo() {
+  try {
+    const r = await fetch("clothes.json", { cache: "no-cache" });
+    if (!r.ok) return [];
+    return (await r.json()).map(c => ({ ...c, id: "repo:" + c.file, img: "photos/" + c.file, repo: true }));
+  } catch { return []; }
+}
+function save(it) { if (it.repo) return; try { db && tx("readwrite").put(it); } catch {} }
 function remove(id) { try { db && tx("readwrite").delete(id); } catch {} }
 
 // ---------- photo upload (downscaled to keep storage small) ----------
@@ -120,6 +131,7 @@ document.getElementById("file").onchange = async e => {
   renderItems(); recommend();
 };
 
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 function renderItems() {
   document.getElementById("count").textContent = `(${items.length} 件)`;
   const box = document.getElementById("items");
@@ -127,6 +139,12 @@ function renderItems() {
   for (const it of items) {
     const d = document.createElement("div");
     d.className = "item";
+    if (it.repo) {
+      d.innerHTML = `<img src="${it.img}" alt="" loading="lazy"><div class="meta">
+        <div>${esc(it.name || CATS[it.cat])}</div>
+        <div class="tag">${CATS[it.cat].split("(")[0]} · 保暖 ${it.warmth}${it.waterproof ? " · 防水" : ""} · 仓库</div></div>`;
+      box.appendChild(d); continue;
+    }
     d.innerHTML = `<img src="${it.img}" alt="">
       <div class="meta">
         <input type="text" placeholder="名字（可选）" value="${(it.name||"").replace(/"/g,"&quot;")}">
@@ -199,11 +217,12 @@ function recommend() {
     top: pick("top", top), bottom: pick("bottom", bottom), shoes: pick("shoes", 3, wet)
   };
   const fig = document.getElementById("figure");
-  fig.innerHTML = Object.keys(CATS).map(k => {
-    const it = look[k];
-    const label = CATS[k].split("(")[0];
-    return `<div class="slot ${k}">${it ? `<img src="${it.img}" alt="">` : ""}<span>${it ? (it.name || label) : (k==="acc"&&!needAcc || k==="outer"&&!needOuter ? "不需要"+label : "没有"+label)}</span></div>`;
-  }).join("");
+  const slot = k => {
+    const it = look[k], label = CATS[k].split("(")[0];
+    const none = (k==="acc"&&!needAcc) || (k==="outer"&&!needOuter) ? "不需要"+label : "没有"+label;
+    return `<div class="slot ${k}">${it ? `<img src="${it.img}" alt="">` : ""}<span>${it ? esc(it.name || label) : none}</span></div>`;
+  };
+  fig.innerHTML = slot("acc") + `<div class="upper">${slot("outer")}${slot("top")}</div>` + slot("bottom") + slot("shoes");
 
   const tips = [];
   if (!items.length) tips.push("先在下面上传你的衣服照片。");
@@ -215,7 +234,7 @@ function recommend() {
 }
 document.getElementById("shuffle").onclick = () => { seed++; recommend(); };
 
-(async () => { await openDB(); items = await loadAll(); seed = new Date().getDate(); renderItems(); getWeather(); })();
+(async () => { await openDB(); items = [...await loadRepo(), ...await loadAll()]; seed = new Date().getDate(); renderItems(); getWeather(); })();
 </script>
 </body>
 </html>
