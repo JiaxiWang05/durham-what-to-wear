@@ -394,7 +394,11 @@ function choose(pool, score, rotate) {
 function pick(cat, target, preferWP, style, ok) {
   const score = i => Math.abs(i.warmth - target) + (preferWP && !i.waterproof ? 1.5 : 0);
   let pool = poolOf(i => i.cat === cat, style);
-  if (ok) { const f = pool.filter(ok); if (f.length) pool = f; }
+  if (ok) {
+    // keep the matching rules even if that means leaving the requested style; break them only as a last resort
+    const f = pool.filter(ok), any = poolOf(i => i.cat === cat).filter(ok);
+    if (f.length) pool = f; else if (any.length) pool = any;
+  }
   // coats are worn daily, so they always go by weather alone
   return choose(pool, score, cat !== "outer");
 }
@@ -404,8 +408,10 @@ const pairKey = (a, b) => [a.id, b.id].sort().join("|");
 let disliked = loadSet("disliked");   // pairs the 👎 button ruled out
 const goesWith = (a, b) => !a || !b || (shareStyle(a, b) && !(a.pattern && b.pattern) && !disliked.has(pairKey(a, b)));
 // `layer` may be one role or a list: "mid" (under a puffer), "base" (under a sweatshirt), "dress" (under a dress)
-function pickLayer(role, exclude, style) {
-  return choose(poolOf(i => [].concat(i.layer || []).includes(role) && !exclude.includes(i), style), () => 0, true);
+function pickLayer(role, exclude, style, ok) {
+  let pool = poolOf(i => [].concat(i.layer || []).includes(role) && !exclude.includes(i), style);
+  if (ok) pool = pool.filter(ok);   // layers are optional, so if nothing fits the rules, skip the layer
+  return choose(pool, () => 0, true);
 }
 
 function recommend() {
@@ -446,7 +452,9 @@ function recommend() {
   look.mid = !dressDay && tOut < 0 && look.outer?.warmth >= 4 ? pickLayer("mid", [look.outer], null) : null;
   const t0 = look.top;
   const sweatCold = !dressDay && t0 && t0.warmth >= 3 && inner >= 3;
-  look.base = sweatCold ? pickLayer("base", [t0], style === "sport" ? null : style) : null;
+  // the shirt underneath must not be a second (or third) pattern
+  look.base = sweatCold ? pickLayer("base", [t0], style === "sport" ? null : style,
+    i => !(i.pattern && (t0.pattern || look.bottom?.pattern))) : null;
 
   const fig = document.getElementById("figure");
   const slot = (it, cls, role, label) =>
