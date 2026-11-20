@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>杜伦穿搭</title>
+<title>杜伦穿搭 · Durham What to Wear</title>
 <style>
   :root { --bg:#f6f5f2; --card:#fff; --ink:#222; --muted:#777; --line:#e3e1dc; --accent:#2f6f5e; }
   @media (prefers-color-scheme: dark) {
@@ -19,18 +19,25 @@
   button, select, input { font: inherit; }
   button { background:var(--accent); color:#fff; border:0; border-radius:8px; padding:8px 14px; cursor:pointer; }
   button.ghost { background:transparent; color:var(--accent); border:1px solid var(--accent); }
+  button.ghost.on { background:var(--accent); color:#fff; }
   .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
   #weather b { font-size: 26px; }
-  /* outfit preview: items stacked on a body-shaped column */
-  /* head-to-toe order: accessories, jacket | top, bottoms, legwear, shoes */
-  .figure { margin: 8px auto 0; width: min(300px, 100%); display:grid; gap:6px; }
+  /* occasion box */
+  .occ { display:flex; gap:6px; margin-top:10px; }
+  .occ input { flex:1; min-width:0; padding:8px 10px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--ink); }
+  .chips { margin-top:6px; gap:6px; }
+  .chips button { padding:3px 10px; font-size:12px; border-radius:999px; background:var(--bg); color:var(--ink); border:1px solid var(--line); }
+  #occInfo { margin-top:6px; }
+  /* head-to-toe outfit: accessories, layers (coat · mid · top · base), bottoms, legwear, shoes */
+  .figure { margin: 10px auto 0; width: min(320px, 100%); display:grid; gap:6px; }
   .upper { display:grid; grid-template-columns: 1fr 1fr; gap:6px; }
   .upper.single { grid-template-columns: 1fr; width:60%; justify-self:center; }
-  .upper .slot { height:170px; }
+  .upper .slot { height:160px; }
   .slot { background:var(--bg); border:1px dashed var(--line); border-radius:10px; min-height:90px;
           display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative; }
   .slot img { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; display:block; }
-  .slot span { position:absolute; bottom:2px; left:6px; font-size:11px; color:var(--muted); background:var(--card); padding:0 4px; border-radius:4px; }
+  .slot span { position:absolute; bottom:2px; left:6px; right:6px; font-size:11px; color:var(--muted); background:var(--card); padding:0 4px; border-radius:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .slot .role { position:absolute; top:4px; left:4px; font-size:10px; font-weight:600; color:#fff; background:var(--accent); padding:0 5px; border-radius:4px; }
   .slot.acc { height:60px; min-height:0; width:60%; justify-self:center; }
   .slot.bottom { height:170px; width:70%; justify-self:center; }
   .slot.legs { height:110px; width:50%; justify-self:center; }
@@ -55,39 +62,115 @@
 </head>
 <body>
 <main>
-  <h1>杜伦今天穿什么</h1>
+  <div class="row" style="justify-content:space-between">
+    <h1 data-t="title"></h1>
+    <button class="ghost" id="lang"></button>
+  </div>
 
-  <section class="card" id="weather"><span class="muted">正在获取杜伦天气…</span></section>
+  <section class="card" id="weather"></section>
 
   <section class="card">
     <div class="row" style="justify-content:space-between">
-      <h2>今日推荐</h2>
-      <button class="ghost" id="shuffle">换一套</button>
+      <h2 data-t="rec"></h2>
+      <button class="ghost" id="shuffle" data-t="shuffle"></button>
     </div>
     <div class="row mode" style="margin-top:8px">
-      <button class="ghost" data-mode="daily">日常</button>
-      <button class="ghost" data-mode="goout">Go out ✨</button>
+      <button class="ghost" data-mode="daily" data-t="daily"></button>
+      <button class="ghost" data-mode="goout" data-t="goout"></button>
     </div>
+    <form class="occ" id="occForm">
+      <input id="occ" type="text" autocomplete="off">
+      <button type="submit" data-t="occGo"></button>
+    </form>
+    <div class="row chips" id="examples"></div>
+    <div id="occInfo" class="muted"></div>
     <div class="figure" id="figure"></div>
     <div class="row" style="justify-content:center; margin-top:10px">
-      <button id="wear">今天就穿这套 ✓</button><span id="wearMsg" class="muted"></span>
+      <button id="wear" data-t="wear"></button><span id="wearMsg" class="muted"></span>
     </div>
     <div id="tips" class="muted"></div>
   </section>
 
   <section class="card">
     <div class="row" style="justify-content:space-between">
-      <h2>我的衣服库 <span class="muted" id="count"></span></h2>
-      <label class="up"><input type="file" id="file" accept="image/*" multiple><button type="button" onclick="this.previousElementSibling.click()">+ 添加照片</button></label>
+      <h2><span data-t="wardrobe"></span> <span class="muted" id="count"></span></h2>
+      <label class="up"><input type="file" id="file" accept="image/*" multiple><button type="button" onclick="this.previousElementSibling.click()" data-t="add"></button></label>
     </div>
-    <p class="muted">标“仓库”的衣服来自 GitHub 仓库的 clothes.json（公开）。这里新加的照片只存在这个浏览器里。</p>
+    <p class="muted" data-t="note"></p>
     <div class="grid" id="items"></div>
   </section>
 </main>
 
 <script>
-const CATS = { outer:"外套", top:"上衣", dress:"连衣裙", bottom:"下装", legs:"袜子/打底", shoes:"鞋", acc:"配饰(帽/围巾/手套)" };
-const WARM = ["", "1 很薄", "2 薄", "3 中等", "4 厚", "5 很厚"];
+// ---------- text in both languages ----------
+const T = {
+  zh: {
+    title: "杜伦今天穿什么", rec: "今日推荐", shuffle: "换一套", daily: "日常", goout: "Go out ✨",
+    occPh: "穿去哪？比如：周六约会，室内大概 20 度", occGo: "推荐",
+    examples: ["约会 室内20度", "去健身房", "上课", "面试", "圣诞市场 户外", "在家"],
+    wear: "今天就穿这套 ✓", worn: "已记下 ✓", reset: c => ` ${c}全部穿过一轮，重新开始。`, sep: "、",
+    wardrobe: "我的衣服库", add: "+ 添加照片",
+    note: "仓库里的衣服来自 GitHub 的 clothes.json（公开）。这里新加的照片只存在这个浏览器里。",
+    count: (n, off) => `(${n} 件${off ? `，${off} 件待洗` : ""})`,
+    wash: "待洗", unwash: "洗好了，放回", inWash: "🧺 待洗中", wornTag: "本轮已穿",
+    warmth: "保暖", waterproof: "防水", del: "删除", delQ: "删除这件衣服？", namePh: "名字（可选）",
+    cats: { outer: "外套", top: "上衣", dress: "连衣裙", bottom: "下装", legs: "袜子/打底", shoes: "鞋", acc: "配饰" },
+    roles: { outer: "外套", mid: "中层", top: "上衣", dress: "连衣裙", base: "内搭" },
+    styles: { cute: "可爱", sport: "运动", formal: "正式", casual: "日常" },
+    warm: ["", "1 很薄", "2 薄", "3 中等", "4 厚", "5 很厚"],
+    none: c => "没有" + c,
+    loading: "正在获取杜伦天气…", wxFail: "天气获取失败，先按 8°C 推荐。",
+    wx: w => `<div><b>${w.now}°C</b> <span class="muted">体感 ${w.feelNow}°C · 风 ${w.wind} km/h</span></div>
+              <div class="muted">白天体感 ${w.feelMin}~${w.feelMax}°C · 降水概率 ${w.rain}%</div>`,
+    heard: "识别到：", notHeard: "没认出场合，先按日常推荐。可以写：约会、健身、上课、面试、户外、室内 20 度…",
+    tags: { cute: "出去玩/约会", sport: "运动", formal: "正式场合", casual: "日常舒服", home: "在家",
+            outdoor: "户外久待", rain: "下雨", warmer: "怕冷", indoor: t => `室内 ${t}°C` },
+    tips: {
+      goout: o => "Go out：里面按室内 15–22°C 搭配，外面" + (o ? "穿上外套。" : "不用外套。"),
+      inside: (t, o) => `里面按室内 ${t}°C 搭配` + (o ? "，路上穿外套。" : "。"),
+      outdoor: "户外待得久，外套按更冷来选。", home: "在家不用外套。",
+      layer: "叠穿：", tights: "穿裙子记得加厚连裤袜。", empty: "先在下面上传你的衣服照片。",
+      avg: t => `白天平均体感约 ${t}°C。`, cold: "很冷，记得围巾手套。",
+      rain: r => `降水概率 ${r}%，穿防水外套/鞋或带伞。`, swing: "早晚温差大，选能脱的外套。"
+    }
+  },
+  en: {
+    title: "Durham: what to wear today", rec: "Today's outfit", shuffle: "Shuffle", daily: "Everyday", goout: "Go out ✨",
+    occPh: "Where are you going? e.g. Saturday date, about 20°C inside", occGo: "Suggest",
+    examples: ["date, 20°C inside", "gym", "lecture", "interview", "Christmas market, outdoors", "staying in"],
+    wear: "Wearing this today ✓", worn: "Saved ✓", reset: c => ` Every ${c} has been worn once, starting a new round.`, sep: ", ",
+    wardrobe: "My wardrobe", add: "+ Add photos",
+    note: "Clothes from the repo come from clothes.json on GitHub (public). Photos you add here stay in this browser only.",
+    count: (n, off) => `(${n} items${off ? `, ${off} in the wash` : ""})`,
+    wash: "To wash", unwash: "Washed, put back", inWash: "🧺 In the wash", wornTag: "Worn this round",
+    warmth: "Warmth", waterproof: "Waterproof", del: "Delete", delQ: "Delete this item?", namePh: "Name (optional)",
+    cats: { outer: "coat", top: "top", dress: "dress", bottom: "bottoms", legs: "tights", shoes: "shoes", acc: "accessories" },
+    roles: { outer: "Coat", mid: "Mid", top: "Top", dress: "Dress", base: "Under" },
+    styles: { cute: "cute", sport: "sporty", formal: "smart", casual: "casual" },
+    warm: ["", "1 very light", "2 light", "3 medium", "4 warm", "5 very warm"],
+    none: c => "No " + c,
+    loading: "Getting Durham weather…", wxFail: "Couldn't get the weather; using 8°C for now.",
+    wx: w => `<div><b>${w.now}°C</b> <span class="muted">feels ${w.feelNow}°C · wind ${w.wind} km/h</span></div>
+              <div class="muted">Daytime feels ${w.feelMin}–${w.feelMax}°C · rain ${w.rain}%</div>`,
+    heard: "Picked up: ", notHeard: "Didn't recognise the occasion, so this is an everyday outfit. Try: date, gym, lecture, interview, outdoors, 20°C inside…",
+    tags: { cute: "going out / date", sport: "sport", formal: "smart occasion", casual: "comfy everyday", home: "staying in",
+            outdoor: "outdoors for a while", rain: "rain", warmer: "feel the cold", indoor: t => `${t}°C inside` },
+    tips: {
+      goout: o => "Go out: dressed for a 15–22°C venue" + (o ? "; wear the coat outside." : "; no coat needed."),
+      inside: (t, o) => `Dressed for ${t}°C inside` + (o ? "; wear the coat on the way." : "."),
+      outdoor: "Outdoors for a while, so the coat is picked for colder weather.", home: "Staying in, so no coat.",
+      layer: "Layered: ", tights: "With a skirt, wear thick tights.", empty: "Add photos of your clothes below to start.",
+      avg: t => `Average daytime feels-like about ${t}°C.`, cold: "Very cold: scarf and gloves.",
+      rain: r => `${r}% chance of rain: waterproof coat/shoes or an umbrella.`, swing: "Big temperature swing today: pick a coat you can take off."
+    }
+  }
+};
+let lang = "zh";
+try { lang = localStorage.getItem("lang") === "en" ? "en" : "zh"; } catch {}
+const L = () => T[lang];
+const nm = it => (lang === "en" ? it.name_en || it.name : it.name || it.name_en) || L().cats[it.cat];
+const hasStyle = (it, s) => (it.styles || []).includes(s);
+
 let items = [], weather = null, seed = 0;
 
 // ---------- storage (IndexedDB, falls back to memory) ----------
@@ -156,6 +239,7 @@ document.getElementById("file").onchange = async e => {
 };
 
 function esc(s) { return String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
 // ---------- laundry + wear rotation (kept in this browser) ----------
 function loadSet(k) { try { return new Set(JSON.parse(localStorage.getItem(k) || "[]")); } catch { return new Set(); } }
 function saveSet(k, s) { try { localStorage.setItem(k, JSON.stringify([...s])); } catch {} }
@@ -164,7 +248,7 @@ let laundry = loadSet("laundry"), worn = loadSet("worn"), lastLook = [];
 function washButton(d, it) {
   const b = document.createElement("button");
   b.className = "wash";
-  b.textContent = laundry.has(it.id) ? "洗好了，放回" : "待洗";
+  b.textContent = laundry.has(it.id) ? L().unwash : L().wash;
   b.onclick = () => {
     laundry.has(it.id) ? laundry.delete(it.id) : laundry.add(it.id);
     saveSet("laundry", laundry); renderItems(); recommend();
@@ -173,7 +257,7 @@ function washButton(d, it) {
 }
 function renderItems() {
   const off = items.filter(i => laundry.has(i.id)).length;
-  document.getElementById("count").textContent = `(${items.length} 件${off ? `，${off} 件待洗` : ""})`;
+  document.getElementById("count").textContent = L().count(items.length, off);
   const box = document.getElementById("items");
   box.innerHTML = "";
   // clothes in the wash go to the end of the list
@@ -181,21 +265,22 @@ function renderItems() {
   for (const it of sorted) {
     const d = document.createElement("div");
     d.className = "item" + (laundry.has(it.id) ? " off" : "");
-    const status = laundry.has(it.id) ? `<div class="badge">🧺 待洗中</div>` : worn.has(it.id) ? `<div class="badge">本轮已穿</div>` : "";
+    const status = laundry.has(it.id) ? `<div class="badge">${L().inWash}</div>` : worn.has(it.id) ? `<div class="badge">${L().wornTag}</div>` : "";
     if (it.repo) {
+      const styles = (it.styles || []).map(s => L().styles[s]).join(" · ");
       d.innerHTML = `<img src="${it.img}" alt="" loading="lazy"><div class="meta">
-        <div>${esc(it.name || CATS[it.cat])}</div>
-        <div class="tag">${CATS[it.cat].split("(")[0]} · 保暖 ${it.warmth}${it.waterproof ? " · 防水" : ""}${it.cute ? " · 可爱" : ""}</div>${status}</div>`;
+        <div>${esc(nm(it))}</div>
+        <div class="tag">${L().cats[it.cat]} · ${L().warmth} ${it.warmth}${it.waterproof ? " · " + L().waterproof : ""}${styles ? " · " + styles : ""}</div>${status}</div>`;
       washButton(d, it);
       box.appendChild(d); continue;
     }
     d.innerHTML = `<img src="${it.img}" alt="">
       <div class="meta">
-        <input type="text" placeholder="名字（可选）" value="${(it.name||"").replace(/"/g,"&quot;")}">
-        <select class="cat">${Object.entries(CATS).map(([k,v])=>`<option value="${k}" ${k===it.cat?"selected":""}>${v}</option>`).join("")}</select>
-        <select class="warm">${[1,2,3,4,5].map(w=>`<option value="${w}" ${w==it.warmth?"selected":""}>保暖 ${WARM[w]}</option>`).join("")}</select>
-        <label><input type="checkbox" class="wp" ${it.waterproof?"checked":""}> 防水</label>
-        <button class="del">删除</button>
+        <input type="text" placeholder="${L().namePh}" value="${esc(it.name || "")}">
+        <select class="cat">${Object.entries(L().cats).map(([k, v]) => `<option value="${k}" ${k === it.cat ? "selected" : ""}>${v}</option>`).join("")}</select>
+        <select class="warm">${[1,2,3,4,5].map(w => `<option value="${w}" ${w == it.warmth ? "selected" : ""}>${L().warmth} ${L().warm[w]}</option>`).join("")}</select>
+        <label><input type="checkbox" class="wp" ${it.waterproof ? "checked" : ""}> ${L().waterproof}</label>
+        <button class="del">${L().del}</button>
       </div>`;
     const upd = () => { save(it); recommend(); };
     d.querySelector("input[type=text]").onchange = e => { it.name = e.target.value; upd(); };
@@ -203,7 +288,7 @@ function renderItems() {
     d.querySelector(".warm").onchange = e => { it.warmth = +e.target.value; upd(); };
     d.querySelector(".wp").onchange = e => { it.waterproof = e.target.checked; upd(); };
     d.querySelector(".del").onclick = () => {
-      if (!confirm("删除这件衣服？")) return;
+      if (!confirm(L().delQ)) return;
       items = items.filter(x => x.id !== it.id); remove(it.id); renderItems(); recommend();
     };
     if (status) d.querySelector(".meta").insertAdjacentHTML("afterbegin", status);
@@ -213,27 +298,54 @@ function renderItems() {
 }
 
 // ---------- Durham weather (Open-Meteo, no key) ----------
+let wxFailed = false;
+function renderWeather() {
+  const el = document.getElementById("weather");
+  if (!weather) { el.innerHTML = `<span class="muted">${L().loading}</span>`; return; }
+  if (wxFailed) { el.innerHTML = `<span class="muted">${L().wxFail}</span>`; return; }
+  const r = n => Math.round(n);
+  el.innerHTML = `<div class="row" style="justify-content:space-between">${L().wx({ now: r(weather.now), feelNow: r(weather.feelNow),
+    wind: r(weather.wind), feelMin: r(weather.feelMin), feelMax: r(weather.feelMax), rain: weather.rain })}</div>`;
+}
 async function getWeather() {
   const url = "https://api.open-meteo.com/v1/forecast?latitude=54.7761&longitude=-1.5733" +
     "&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m" +
     "&hourly=apparent_temperature,precipitation_probability&timezone=Europe%2FLondon&forecast_days=1";
-  const el = document.getElementById("weather");
   try {
     const d = await (await fetch(url)).json();
-    const hrs = d.hourly.time.map((t,i)=>({h:+t.slice(11,13), feel:d.hourly.apparent_temperature[i], rain:d.hourly.precipitation_probability[i]}))
+    const hrs = d.hourly.time.map((t, i) => ({ h: +t.slice(11, 13), feel: d.hourly.apparent_temperature[i], rain: d.hourly.precipitation_probability[i] }))
                  .filter(x => x.h >= 8 && x.h <= 20);
-    const feelMin = Math.min(...hrs.map(x=>x.feel)), feelMax = Math.max(...hrs.map(x=>x.feel));
-    const rain = Math.max(...hrs.map(x=>x.rain));
     weather = { now: d.current.temperature_2m, feelNow: d.current.apparent_temperature,
-                feelMin, feelMax, rain, wind: d.current.wind_speed_10m };
-    el.innerHTML = `<div class="row" style="justify-content:space-between">
-        <div><b>${weather.now.toFixed(0)}°C</b> <span class="muted">体感 ${weather.feelNow.toFixed(0)}°C · 风 ${weather.wind.toFixed(0)} km/h</span></div>
-        <div class="muted">白天体感 ${feelMin.toFixed(0)}~${feelMax.toFixed(0)}°C · 降水概率 ${rain}%</div></div>`;
+                feelMin: Math.min(...hrs.map(x => x.feel)), feelMax: Math.max(...hrs.map(x => x.feel)),
+                rain: Math.max(...hrs.map(x => x.rain)), wind: d.current.wind_speed_10m };
   } catch {
-    el.innerHTML = `<span class="muted">天气获取失败，先按 8°C 推荐。</span>`;
+    wxFailed = true;
     weather = { now: 8, feelNow: 8, feelMin: 6, feelMax: 10, rain: 0, wind: 0 };
   }
-  recommend();
+  renderWeather(); recommend();
+}
+
+// ---------- occasion text → context (keyword rules, English + Chinese) ----------
+const RULES = [
+  { tag: "cute", set: { style: "cute" }, re: /约会|date|派对|party|酒吧|\bbars?\b|\bpub|club|蹦迪|聚会|晚餐|晚饭|dinner|brunch|拍照|photo|逛街|shopping|咖啡|caf[eé]|night out|go(ing)? out|演唱会|concert|gig|可爱|好看|漂亮|cute|pretty/i },
+  { tag: "sport", set: { style: "sport" }, re: /健身|gym|跑步|\brun(ning)?\b|瑜伽|yoga|普拉提|pilates|运动|sport|workout|exercise|徒步|hik(e|ing)|爬山|骑车|cycling|网球|tennis|羽毛球|badminton/i },
+  { tag: "formal", set: { style: "formal" }, re: /面试|interview|presentation|答辩|viva|开会|meeting|正式|formal|smart|conference|会议|seminar|ceremony|典礼|毕业|graduation|见家长|parents|church|教堂|office|上班|work\b/i },
+  { tag: "casual", set: { style: "casual" }, re: /上课|lecture|class|图书馆|library|\blab\b|实验室|自习|study|学习|tutorial|导师|supervisor|舒服|comfy|comfortable|lazy|懒/i },
+  { tag: "home", set: { home: true, style: "casual", inTemp: 20 }, re: /在家|宅|stay(ing)? (in|home)|at home|chill(ing)? at home/i },
+  { tag: "outdoor", set: { outdoor: true }, re: /户外|outdoors?|outside|走路|walk|散步|看球|football|match|市场|market|排队|queue|烟花|fireworks|野餐|picnic/i },
+  { tag: "rain", set: { rain: true }, re: /雨|rain/i },
+  { tag: "warmer", set: { warmer: true }, re: /怕冷|保暖|暖和|feel the cold|get cold|warm(er)?\b/i },
+  { tag: null, set: { indoor: true }, re: /室内|indoors?|inside|餐厅|restaurant|电影|cinema|movie|商场|mall|museum|博物馆/i }
+];
+function parseOccasion(text) {
+  const c = { style: null, inTemp: null, outdoor: false, rain: false, home: false, warmer: false, indoor: false, tags: [] };
+  for (const r of RULES) if (r.re.test(text)) { Object.assign(c, r.set); if (r.tag && !c.tags.includes(r.tag)) c.tags.push(r.tag); }
+  // a number with a degree marker is read as the indoor temperature, e.g. "20度", "20°C", "20 degrees"
+  const m = text.match(/(-?\d{1,2})\s*(?:度|°\s*c?|℃|c\b|degrees?|deg\b)/i);
+  if (m) c.inTemp = +m[1];
+  else if (c.indoor && c.inTemp == null) c.inTemp = 20;
+  if (c.inTemp != null && !c.home) c.tags.push("indoor");
+  return c;
 }
 
 // ---------- rule-based recommendation ----------
@@ -245,102 +357,177 @@ function rand(n) {
   x ^= x + Math.imul(x ^ (x >>> 7), 61 | x);
   return Math.floor((((x ^ (x >>> 14)) >>> 0) / 4294967296) * n);
 }
-// "go out" mode: cute pieces, dressed for a ~15°C indoor venue; the coat still follows the real weather
-let mode = "daily";
+let mode = "daily", occText = "";
 try { mode = localStorage.getItem("mode") === "goout" ? "goout" : "daily"; } catch {}
-function pick(cat, target, preferWP, cute) {
-  let pool = items.filter(i => i.cat === cat && !laundry.has(i.id));
-  if (cute && pool.some(i => i.cute)) pool = pool.filter(i => i.cute);
+
+function currentCtx() {
+  if (occText.trim()) return { ...parseOccasion(occText), fromText: true };
+  if (mode === "goout") return { style: "cute", inTemp: 18.5, goout: true, tags: [] };
+  return { style: null, inTemp: null, tags: [] };
+}
+// warmth level (1–5) wanted for the coat and for the layers underneath, at a feels-like temperature
+const outerWarmth = t => t < 3 ? 5 : t < 6 ? 4 : t < 12 ? 3 : t < 17 ? 2 : null;
+const innerWarmth = t => t < 0 ? 4 : t < 12 ? 3 : t < 15 ? 2 : t < 20 ? 1.5 : 1;
+
+// candidates of a category, not in the wash; a style narrows the pool only when the wardrobe has that style
+function poolOf(filter, style) {
+  let pool = items.filter(i => filter(i) && !laundry.has(i.id));
+  if (style && pool.some(i => hasStyle(i, style))) pool = pool.filter(i => hasStyle(i, style));
+  return pool;
+}
+function choose(pool, score, rotate) {
   if (!pool.length) return null;
-  const score = i => Math.abs(i.warmth - target) + (preferWP && !i.waterproof ? 1.5 : 0);
   const best = Math.min(...pool.map(score));
   // rotation: pieces not yet worn this cycle go first, as long as they still suit the weather
-  // (coats are worn daily, so they always go by weather alone)
-  const fresh = cat === "outer" ? [] : pool.filter(i => !worn.has(i.id) && score(i) <= Math.max(best, 1));
+  const fresh = rotate ? pool.filter(i => !worn.has(i.id) && score(i) <= Math.max(best, 1)) : [];
   const cand = fresh.length ? fresh : pool;
   const best2 = Math.min(...cand.map(score));
   const close = cand.filter(i => score(i) <= best2 + 0.5);
   return close[rand(close.length)];
 }
+function pick(cat, target, preferWP, style) {
+  const score = i => Math.abs(i.warmth - target) + (preferWP && !i.waterproof ? 1.5 : 0);
+  // coats are worn daily, so they always go by weather alone
+  return choose(poolOf(i => i.cat === cat, style), score, cat !== "outer");
+}
+function pickLayer(role, exclude, style) {
+  return choose(poolOf(i => i.layer === role && !exclude.includes(i), style), () => 0, true);
+}
+
 function recommend() {
   if (!weather) return;
   rs = Math.imul(seed + 1, 2654435761);
-  const t = (weather.feelMin + weather.feelMax) / 2, wet = weather.rain >= 40;
-  // target warmth per layer, by average daytime feels-like temperature
-  let outer, top, bottom, needOuter = true, needAcc = false;
-  if (t < 0)       { outer = 5; top = 4; bottom = 4; needAcc = true; }
-  else if (t < 6)  { outer = t < 3 ? 5 : 4; top = 3; bottom = 3; needAcc = t < 3; }
-  else if (t < 12) { outer = 3; top = 3; bottom = 3; }
-  else if (t < 17) { outer = 2; top = 2; bottom = 2; }
-  else             { needOuter = wet; outer = 1; top = 1; bottom = 1; }
+  const ctx = currentCtx(), style = ctx.style;
+  const tAvg = (weather.feelMin + weather.feelMax) / 2;
+  const tOut = tAvg - (ctx.outdoor ? 2 : 0) - (ctx.warmer ? 2 : 0);
+  const tIn = ctx.inTemp != null ? ctx.inTemp - (ctx.warmer ? 2 : 0) : tOut;
+  const wet = weather.rain >= 40 || ctx.rain;
+  let outerT = ctx.home ? null : outerWarmth(tOut);
+  if (outerT == null && wet && !ctx.home) outerT = 1;
+  const inner = innerWarmth(tIn);
 
-  const goOut = mode === "goout";
-  if (goOut) { top = 1.5; bottom = 1.5; }   // inner layers for a 15–22°C venue: warmth 1 and 2 both fit
-  // dress day: every other shuffle when dresses exist (2 in 3 when going out), or always if there are no bottoms
-  const hasDress = items.some(i => i.cat === "dress"), hasBottom = items.some(i => i.cat === "bottom");
-  const dressDay = hasDress && (!hasBottom || (goOut ? seed % 3 !== 0 : seed % 2 === 1));
-  const look = {
-    acc: needAcc ? pick("acc", 4) : null,
-    outer: needOuter ? pick("outer", outer, wet) : null,
-    top: dressDay ? pick("dress", Math.min(top, bottom), false, goOut) : pick("top", top, false, goOut),
-    bottom: dressDay ? null : pick("bottom", bottom, false, goOut),
-    shoes: pick("shoes", goOut ? 2 : 3, wet, goOut)
-  };
+  // dress day: every other shuffle (2 in 3 for cute), never for sport or at home, always if there are no bottoms
+  const hasDress = poolOf(i => i.cat === "dress", style).length > 0, hasBottom = poolOf(i => i.cat === "bottom").length > 0;
+  const dressDay = hasDress && style !== "sport" && !ctx.home &&
+    (!hasBottom || (style === "cute" ? seed % 3 !== 0 : seed % 2 === 1));
+  const look = {};
+  look.acc = !ctx.home && tOut < 3 ? pick("acc", 4) : null;
+  look.outer = outerT != null ? pick("outer", outerT, wet) : null;
+  look.top = pick(dressDay ? "dress" : "top", inner, false, style);
+  look.bottom = dressDay ? null : pick("bottom", inner, false, style);
+  look.shoes = pick("shoes", style === "cute" || style === "formal" ? 2 : 3, wet, style);
   // tights only go under skirts and dresses, not trousers
-  const skirt = dressDay || /裙|skirt/i.test(look.bottom?.name || "");
-  look.legs = skirt && t < 15 ? pick("legs", 3) : null;
-  const fig = document.getElementById("figure");
-  const slot = k => {
-    const it = look[k], label = (k === "top" && dressDay ? "连衣裙" : CATS[k]).split("(")[0];
-    return `<div class="slot ${k}">${it ? `<img src="${it.img}" alt="">` : ""}<span>${it ? esc(it.name || label) : "没有" + label}</span></div>`;
-  };
-  // optional layers are left out when not needed or not owned; core pieces show "没有X" when missing
-  const upper = (needOuter ? slot("outer") : "") + slot("top");
-  fig.innerHTML = (look.acc ? slot("acc") : "") +
-    `<div class="upper${needOuter ? "" : " single"}">${upper}</div>` +
-    (dressDay ? "" : slot("bottom")) + (look.legs ? slot("legs") : "") + slot("shoes");
+  const skirt = dressDay || /裙|skirt/i.test((look.bottom?.name || "") + (look.bottom?.name_en || ""));
+  look.legs = skirt && tOut < 15 && !ctx.home ? pick("legs", 3) : null;
 
-  const tips = [];
+  // layering: a knit/hoodie under the coat when it's freezing; a long-sleeve under a light dress
+  // or under a sweatshirt (collar peeking out) when the inside layers need warmth
+  look.mid = tOut < 0 && look.outer?.warmth >= 4 ? pickLayer("mid", [look.outer], null) : null;
+  const t0 = look.top;
+  const dressCold = dressDay && t0 && t0.warmth <= 2 && (ctx.inTemp == null ? tOut < 10 : tIn < 15);
+  const sweatCold = !dressDay && t0 && t0.warmth >= 3 && inner >= 3;
+  look.base = (dressCold || sweatCold) ? pickLayer("base", [t0], style === "sport" ? null : style) : null;
+
+  const fig = document.getElementById("figure");
+  const slot = (it, cls, role, label) =>
+    `<div class="slot ${cls}">${it ? `<img src="${it.img}" alt="">` : ""}${role ? `<b class="role">${role}</b>` : ""}` +
+    `<span>${it ? esc(nm(it)) : L().none(label)}</span></div>`;
+  const layered = !!(look.mid || look.base);
+  const R = L().roles, C = L().cats;
+  const cells = [
+    look.outer && slot(look.outer, "outer", layered && R.outer, C.outer),
+    look.mid && slot(look.mid, "mid", R.mid, C.outer),
+    slot(look.top, "top", layered && (dressDay ? R.dress : R.top), dressDay ? C.dress : C.top),
+    look.base && slot(look.base, "base", R.base, C.top)
+  ].filter(Boolean);
+  fig.innerHTML = (look.acc ? slot(look.acc, "acc", "", C.acc) : "") +
+    `<div class="upper${cells.length === 1 ? " single" : ""}">${cells.join("")}</div>` +
+    (dressDay ? "" : slot(look.bottom, "bottom", "", C.bottom)) +
+    (look.legs ? slot(look.legs, "legs", "", C.legs) : "") + slot(look.shoes, "shoes", "", C.shoes);
   lastLook = Object.values(look).filter(Boolean);
-  if (goOut) tips.push("Go out：里面按室内 15–22°C 搭配，外面" + (needOuter ? "穿上外套。" : "不用外套。"));
-  if (dressDay && t < 10) tips.push("穿裙子记得加厚连裤袜。");
-  if (!items.length) tips.push("先在下面上传你的衣服照片。");
-  tips.push(`白天平均体感约 ${t.toFixed(0)}°C。`);
-  if (t < 3) tips.push("很冷，记得围巾手套。");
-  if (wet) tips.push(`降水概率 ${weather.rain}%，穿防水外套/鞋或带伞。`);
-  if (weather.feelMax - weather.feelMin > 6) tips.push("早晚温差大，选能脱的外套。");
+
+  // what the occasion box understood
+  const info = document.getElementById("occInfo");
+  if (ctx.fromText) {
+    const tg = L().tags;
+    info.textContent = ctx.tags.length
+      ? L().heard + ctx.tags.map(k => k === "indoor" ? tg.indoor(ctx.inTemp) : tg[k]).join(" · ")
+      : L().notHeard;
+  } else info.textContent = "";
+
+  const P = L().tips, tips = [];
+  if (ctx.goout) tips.push(P.goout(!!look.outer));
+  else if (ctx.home) tips.push(P.home);
+  else if (ctx.inTemp != null) tips.push(P.inside(ctx.inTemp, !!look.outer));
+  if (ctx.outdoor) tips.push(P.outdoor);
+  if (layered) tips.push(P.layer + [look.mid, look.base].filter(Boolean).map(nm).join(" + ") + (lang === "en" ? "." : "。"));
+  if (dressDay && tOut < 10) tips.push(P.tights);
+  if (!items.length) tips.push(P.empty);
+  tips.push(P.avg(Math.round(tAvg)));
+  if (tOut < 3 && !ctx.home) tips.push(P.cold);
+  if (wet) tips.push(P.rain(weather.rain));
+  if (weather.feelMax - weather.feelMin > 6 && !ctx.home) tips.push(P.swing);
   document.getElementById("tips").textContent = tips.join(" ");
 }
+
+// ---------- controls ----------
 document.getElementById("shuffle").onclick = () => { seed++; recommend(); };
 document.getElementById("wear").onclick = () => {
   const ids = lastLook.map(i => i.id);
   ids.forEach(id => worn.add(id));
   // once every available piece in a category has been worn, that category starts a new cycle
-  let reset = [];
-  for (const cat of Object.keys(CATS)) {
+  const reset = [];
+  for (const cat of Object.keys(T.zh.cats)) {
     const avail = items.filter(i => i.cat === cat && !laundry.has(i.id));
     if (avail.length > 1 && avail.every(i => worn.has(i.id))) {
       avail.forEach(i => { if (!ids.includes(i.id)) worn.delete(i.id); });
-      reset.push(CATS[cat].split("(")[0]);
+      reset.push(L().cats[cat]);
     }
   }
   saveSet("worn", worn);
-  document.getElementById("wearMsg").textContent = "已记下 ✓" + (reset.length ? ` ${reset.join("、")}全部穿过一轮，重新开始。` : "");
+  document.getElementById("wearMsg").textContent = L().worn + (reset.length ? L().reset(reset.join(L().sep)) : "");
   renderItems();
 };
+function paintModes() {
+  document.querySelectorAll(".mode button").forEach(b => b.classList.toggle("on", !occText.trim() && b.dataset.mode === mode));
+}
 function setMode(m) {
-  mode = m;
+  mode = m; occText = "";
+  document.getElementById("occ").value = "";
   try { localStorage.setItem("mode", m); } catch {}
-  document.querySelectorAll(".mode button").forEach(b => {
-    const on = b.dataset.mode === m;
-    b.style.background = on ? "var(--accent)" : "transparent";
-    b.style.color = on ? "#fff" : "var(--accent)";
-  });
-  recommend();
+  paintModes(); recommend();
 }
 document.querySelectorAll(".mode button").forEach(b => b.onclick = () => setMode(b.dataset.mode));
-setMode(mode);
+document.getElementById("occForm").onsubmit = e => {
+  e.preventDefault();
+  occText = document.getElementById("occ").value;
+  seed++; paintModes(); recommend();
+};
+document.getElementById("occ").oninput = e => { if (!e.target.value.trim() && occText) { occText = ""; paintModes(); recommend(); } };
 
+function applyLang() {
+  document.documentElement.lang = lang === "en" ? "en" : "zh";
+  document.querySelectorAll("[data-t]").forEach(el => { el.textContent = L()[el.dataset.t]; });
+  document.getElementById("lang").textContent = lang === "en" ? "中文" : "EN";
+  document.getElementById("occ").placeholder = L().occPh;
+  const ex = document.getElementById("examples");
+  ex.innerHTML = "";
+  for (const s of L().examples) {
+    const b = document.createElement("button");
+    b.type = "button"; b.textContent = s;
+    b.onclick = () => { document.getElementById("occ").value = s; document.getElementById("occForm").requestSubmit(); };
+    ex.appendChild(b);
+  }
+  document.getElementById("wearMsg").textContent = "";
+  renderWeather(); renderItems(); recommend();
+}
+document.getElementById("lang").onclick = () => {
+  lang = lang === "en" ? "zh" : "en";
+  try { localStorage.setItem("lang", lang); } catch {}
+  applyLang();
+};
+
+paintModes(); applyLang();
 (async () => { await openDB(); items = [...await loadRepo(), ...await loadAll()]; seed = new Date().getDate(); renderItems(); getWeather(); })();
 </script>
 </body>
