@@ -17,7 +17,7 @@
   {"name": "lululemon Scuba 藏青拉链卫衣", "name_en": "lululemon Scuba navy zip hoodie", "cat": "outer", "warmth": 3, "waterproof": false, "styles": ["sport", "casual"], "layer": "mid", "color": "#1c2541", "file": "scuba-hoodie.jpg"},
   {"name": "蓝色阔腿卫裤", "name_en": "Blue wide-leg joggers", "cat": "bottom", "warmth": 3, "waterproof": false, "styles": ["casual", "sport"], "color": "#4a6f9c", "file": "blue-wide-leg-pants.jpg"},
   {"name": "灰色阔腿牛仔裤", "name_en": "Grey wide-leg jeans", "cat": "bottom", "warmth": 3, "waterproof": false, "styles": ["casual", "formal"], "color": "#8e8e8e", "file": "grey-wide-jeans.jpg"},
-  {"name": "白色 Polo 长袖衬衫", "name_en": "White Polo long-sleeve shirt", "cat": "top", "warmth": 2, "waterproof": false, "styles": ["formal", "casual"], "layer": ["base", "dress"], "color": "#f7f7f7", "file": "white-polo-shirt.jpg"},
+  {"name": "白色 Polo 长袖衬衫", "name_en": "White Polo long-sleeve shirt", "cat": "top", "warmth": 2, "waterproof": false, "styles": ["formal", "casual"], "layer": "base", "color": "#f7f7f7", "file": "white-polo-shirt.jpg"},
   {"name": "灰色 Polo 华夫格长袖", "name_en": "Grey Polo waffle long-sleeve", "cat": "top", "warmth": 2, "waterproof": false, "styles": ["casual"], "layer": "base", "color": "#a9a9a9", "file": "grey-polo-waffle-tee.jpg"},
   {"name": "lululemon Align 蔓越莓红打底裤", "name_en": "lululemon Align cranberry leggings", "cat": "bottom", "warmth": 2, "waterproof": false, "styles": ["sport"], "color": "#8a2420", "file": "cranberry-align-leggings.jpg"},
   {"name": "Stronger 米色喇叭瑜伽裤", "name_en": "Stronger beige flared leggings", "cat": "bottom", "warmth": 2, "waterproof": false, "styles": ["sport", "casual"], "color": "#e6dcd2", "file": "beige-flared-leggings.jpg"},
