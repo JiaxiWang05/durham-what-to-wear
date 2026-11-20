@@ -447,14 +447,10 @@ function recommend() {
   const skirt = dressDay || /裙|skirt/i.test((look.bottom?.name || "") + (look.bottom?.name_en || ""));
   look.legs = skirt && tOut < 15 && !ctx.home ? pick("legs", 3) : null;
 
-  // layering, only when not wearing a dress (a dress gets just the coat over it):
-  // a knit/hoodie under the coat when it's freezing; a shirt/long-sleeve under a sweatshirt (collar peeking out)
+  // layering: only a knit/hoodie under the puffer when it's freezing, and never with a dress.
+  // Nothing goes under a sweatshirt: sweatshirts and long-sleeves are both loose, so they aren't worn together.
   look.mid = !dressDay && tOut < 0 && look.outer?.warmth >= 4 ? pickLayer("mid", [look.outer], null) : null;
-  const t0 = look.top;
-  const sweatCold = !dressDay && t0 && t0.warmth >= 3 && inner >= 3;
-  // the shirt underneath must not be a second (or third) pattern
-  look.base = sweatCold ? pickLayer("base", [t0], style === "sport" ? null : style,
-    i => !(i.pattern && (t0.pattern || look.bottom?.pattern))) : null;
+  look.base = null;
 
   const fig = document.getElementById("figure");
   const slot = (it, cls, role, label) =>
