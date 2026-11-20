@@ -168,6 +168,9 @@ const T = {
 };
 let lang = "zh";
 try { lang = localStorage.getItem("lang") === "en" ? "en" : "zh"; } catch {}
+// ?lang=en or ?lang=zh in the link picks the language directly
+const qLang = new URLSearchParams(location.search).get("lang");
+if (qLang === "en" || qLang === "zh") lang = qLang;
 const L = () => T[lang];
 const nm = it => (lang === "en" ? it.name_en || it.name : it.name || it.name_en) || L().cats[it.cat];
 const hasStyle = (it, s) => (it.styles || []).includes(s);
