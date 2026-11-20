@@ -43,6 +43,12 @@
   .item .meta { padding:6px; font-size:12px; display:grid; gap:4px; }
   .item select, .item input[type=text] { width:100%; padding:3px; border:1px solid var(--line); border-radius:6px; background:var(--card); color:var(--ink); }
   .item .del { background:transparent; color:#c44; padding:0; font-size:12px; text-align:left; }
+  .item.off img { opacity:.35; filter: grayscale(1); }
+  .item .wash { padding:3px 6px; font-size:12px; }
+  .item.off .wash { background:var(--accent); color:#fff; }
+  .item:not(.off) .wash { background:transparent; color:var(--accent); border:1px solid var(--accent); }
+  .badge { font-size:11px; color:var(--accent); }
+  #wearMsg { margin-left:8px; }
   label.up { display:inline-block; }
   label.up input { display:none; }
 </style>
@@ -63,6 +69,9 @@
       <button class="ghost" data-mode="goout">Go out ✨</button>
     </div>
     <div class="figure" id="figure"></div>
+    <div class="row" style="justify-content:center; margin-top:10px">
+      <button id="wear">今天就穿这套 ✓</button><span id="wearMsg" class="muted"></span>
+    </div>
     <div id="tips" class="muted"></div>
   </section>
 
@@ -147,17 +156,37 @@ document.getElementById("file").onchange = async e => {
 };
 
 function esc(s) { return String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+// ---------- laundry + wear rotation (kept in this browser) ----------
+function loadSet(k) { try { return new Set(JSON.parse(localStorage.getItem(k) || "[]")); } catch { return new Set(); } }
+function saveSet(k, s) { try { localStorage.setItem(k, JSON.stringify([...s])); } catch {} }
+let laundry = loadSet("laundry"), worn = loadSet("worn"), lastLook = [];
+
+function washButton(d, it) {
+  const b = document.createElement("button");
+  b.className = "wash";
+  b.textContent = laundry.has(it.id) ? "洗好了，放回" : "待洗";
+  b.onclick = () => {
+    laundry.has(it.id) ? laundry.delete(it.id) : laundry.add(it.id);
+    saveSet("laundry", laundry); renderItems(); recommend();
+  };
+  d.querySelector(".meta").appendChild(b);
+}
 function renderItems() {
-  document.getElementById("count").textContent = `(${items.length} 件)`;
+  const off = items.filter(i => laundry.has(i.id)).length;
+  document.getElementById("count").textContent = `(${items.length} 件${off ? `，${off} 件待洗` : ""})`;
   const box = document.getElementById("items");
   box.innerHTML = "";
-  for (const it of items) {
+  // clothes in the wash go to the end of the list
+  const sorted = [...items].sort((a, b) => laundry.has(a.id) - laundry.has(b.id));
+  for (const it of sorted) {
     const d = document.createElement("div");
-    d.className = "item";
+    d.className = "item" + (laundry.has(it.id) ? " off" : "");
+    const status = laundry.has(it.id) ? `<div class="badge">🧺 待洗中</div>` : worn.has(it.id) ? `<div class="badge">本轮已穿</div>` : "";
     if (it.repo) {
       d.innerHTML = `<img src="${it.img}" alt="" loading="lazy"><div class="meta">
         <div>${esc(it.name || CATS[it.cat])}</div>
-        <div class="tag">${CATS[it.cat].split("(")[0]} · 保暖 ${it.warmth}${it.waterproof ? " · 防水" : ""} · 仓库</div></div>`;
+        <div class="tag">${CATS[it.cat].split("(")[0]} · 保暖 ${it.warmth}${it.waterproof ? " · 防水" : ""}${it.cute ? " · 可爱" : ""}</div>${status}</div>`;
+      washButton(d, it);
       box.appendChild(d); continue;
     }
     d.innerHTML = `<img src="${it.img}" alt="">
@@ -177,6 +206,8 @@ function renderItems() {
       if (!confirm("删除这件衣服？")) return;
       items = items.filter(x => x.id !== it.id); remove(it.id); renderItems(); recommend();
     };
+    if (status) d.querySelector(".meta").insertAdjacentHTML("afterbegin", status);
+    washButton(d, it);
     box.appendChild(d);
   }
 }
@@ -218,12 +249,17 @@ function rand(n) {
 let mode = "daily";
 try { mode = localStorage.getItem("mode") === "goout" ? "goout" : "daily"; } catch {}
 function pick(cat, target, preferWP, cute) {
-  let pool = items.filter(i => i.cat === cat);
+  let pool = items.filter(i => i.cat === cat && !laundry.has(i.id));
   if (cute && pool.some(i => i.cute)) pool = pool.filter(i => i.cute);
   if (!pool.length) return null;
   const score = i => Math.abs(i.warmth - target) + (preferWP && !i.waterproof ? 1.5 : 0);
   const best = Math.min(...pool.map(score));
-  const close = pool.filter(i => score(i) <= best + 0.5);
+  // rotation: pieces not yet worn this cycle go first, as long as they still suit the weather
+  // (coats are worn daily, so they always go by weather alone)
+  const fresh = cat === "outer" ? [] : pool.filter(i => !worn.has(i.id) && score(i) <= best + 1);
+  const cand = fresh.length ? fresh : pool;
+  const best2 = Math.min(...cand.map(score));
+  const close = cand.filter(i => score(i) <= best2 + 0.5);
   return close[rand(close.length)];
 }
 function recommend() {
@@ -239,7 +275,7 @@ function recommend() {
   else             { needOuter = wet; outer = 1; top = 1; bottom = 1; }
 
   const goOut = mode === "goout";
-  if (goOut) { top = 2; bottom = 2; }   // inner layers for ~15°C indoors
+  if (goOut) { top = 1.5; bottom = 1.5; }   // inner layers for a 15–22°C venue: warmth 1 and 2 both fit
   // dress day: every other shuffle when dresses exist (2 in 3 when going out), or always if there are no bottoms
   const hasDress = items.some(i => i.cat === "dress"), hasBottom = items.some(i => i.cat === "bottom");
   const dressDay = hasDress && (!hasBottom || (goOut ? seed % 3 !== 0 : seed % 2 === 1));
@@ -265,7 +301,8 @@ function recommend() {
     (dressDay ? "" : slot("bottom")) + (look.legs ? slot("legs") : "") + slot("shoes");
 
   const tips = [];
-  if (goOut) tips.push("Go out：里面按室内 15°C 搭配，外面" + (needOuter ? "穿上外套。" : "不用外套。"));
+  lastLook = Object.values(look).filter(Boolean);
+  if (goOut) tips.push("Go out：里面按室内 15–22°C 搭配，外面" + (needOuter ? "穿上外套。" : "不用外套。"));
   if (dressDay && t < 10) tips.push("穿裙子记得加厚连裤袜。");
   if (!items.length) tips.push("先在下面上传你的衣服照片。");
   tips.push(`白天平均体感约 ${t.toFixed(0)}°C。`);
@@ -275,6 +312,22 @@ function recommend() {
   document.getElementById("tips").textContent = tips.join(" ");
 }
 document.getElementById("shuffle").onclick = () => { seed++; recommend(); };
+document.getElementById("wear").onclick = () => {
+  const ids = lastLook.map(i => i.id);
+  ids.forEach(id => worn.add(id));
+  // once every available piece in a category has been worn, that category starts a new cycle
+  let reset = [];
+  for (const cat of Object.keys(CATS)) {
+    const avail = items.filter(i => i.cat === cat && !laundry.has(i.id));
+    if (avail.length > 1 && avail.every(i => worn.has(i.id))) {
+      avail.forEach(i => { if (!ids.includes(i.id)) worn.delete(i.id); });
+      reset.push(CATS[cat].split("(")[0]);
+    }
+  }
+  saveSet("worn", worn);
+  document.getElementById("wearMsg").textContent = "已记下 ✓" + (reset.length ? ` ${reset.join("、")}全部穿过一轮，重新开始。` : "");
+  renderItems();
+};
 function setMode(m) {
   mode = m;
   try { localStorage.setItem("mode", m); } catch {}
