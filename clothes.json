@@ -39,5 +39,7 @@
   {"name": "燕麦色阔腿卫裤", "name_en": "Oatmeal wide-leg sweatpants", "cat": "bottom", "warmth": 3, "waterproof": false, "styles": ["casual", "sport"], "color": "#e8e2d6", "file": "oatmeal-wide-sweatpants.jpg"},
   {"name": "橄榄绿坑条修身长袖", "name_en": "Olive ribbed fitted long-sleeve", "cat": "top", "warmth": 2, "waterproof": false, "styles": ["casual", "cute"], "color": "#8f9a6e", "file": "olive-rib-long-sleeve.jpg"},
   {"name": "NEXT 棕色钩针背心", "name_en": "NEXT brown crochet vest top", "cat": "top", "warmth": 1, "waterproof": false, "styles": ["cute", "casual"], "pattern": true, "color": "#5a3328", "file": "brown-crochet-vest.jpg"},
-  {"name": "碎花雪纺荷叶边长袖上衣", "name_en": "Floral chiffon ruffle blouse", "cat": "top", "warmth": 1, "waterproof": false, "styles": ["cute"], "pattern": true, "color": "#e8c4b0", "file": "floral-chiffon-blouse.jpg"}
+  {"name": "碎花雪纺荷叶边长袖上衣", "name_en": "Floral chiffon ruffle blouse", "cat": "top", "warmth": 1, "waterproof": false, "styles": ["cute"], "pattern": true, "color": "#e8c4b0", "file": "floral-chiffon-blouse.jpg"},
+  {"name": "白色亚麻阔腿裤", "name_en": "White linen wide-leg trousers", "cat": "bottom", "warmth": 1, "waterproof": false, "styles": ["casual", "cute"], "color": "#f3f1ea", "file": "white-linen-pants.jpg"},
+  {"name": "Nike 黑色抓绒运动裤", "name_en": "Nike black fleece joggers", "cat": "bottom", "warmth": 3, "waterproof": false, "styles": ["sport", "casual"], "color": "#111111", "file": "nike-black-joggers.jpg"}
 ]
