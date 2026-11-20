@@ -372,11 +372,10 @@ function currentCtx() {
 }
 // warmth level (1–5) wanted for the coat and for the layers underneath, at a feels-like temperature
 const outerWarmth = t => t < 3 ? 5 : t < 6 ? 4 : t < 12 ? 3 : t < 17 ? 2 : null;
-// tops and bottoms take a warmth *range*, not one exact level, so every piece that suits the day can come up.
-// Tops can be light even when it's cold (you're mostly indoors and the coat does the work outside);
-// bottoms aren't under the coat, so they stay warmer.
-const topRange    = t => t < 6 ? [1, 4] : t < 12 ? [1, 3] : t < 20 ? [1, 2] : [1, 1];
-const bottomRange = t => t < 6 ? [2, 4] : t < 12 ? [2, 3] : t < 17 ? [1, 3] : [1, 2];
+// The weather mostly decides the coat. Under a coat, anything goes (a thin top under a down coat is fine),
+// so tops and bottoms take any warmth; only on warm days are the warm pieces left out.
+const topRange    = t => t < 20 ? [1, 4] : [1, 2];
+const bottomRange = t => t < 20 ? [1, 4] : [1, 2];
 
 // candidates of a category, not in the wash; a style narrows the pool only when the wardrobe has that style
 function poolOf(filter, style) {
@@ -389,7 +388,9 @@ function choose(pool, score, rotate, tol = 0.5) {
   const best = Math.min(...pool.map(score));
   // rotation: pieces not yet worn this cycle go first, as long as they still suit the weather
   const fresh = rotate ? pool.filter(i => !worn.has(i.id) && score(i) <= best) : [];
-  const cand = fresh.length ? fresh : pool;
+  let cand = fresh.length ? fresh : pool;
+  // after a shuffle, avoid pieces from the last few outfits so it doesn't show the same look again
+  if (rotate) { const r = cand.filter(i => !recentIds.has(i.id) && score(i) <= best); if (r.length) cand = r; }
   const best2 = Math.min(...cand.map(score));
   const close = cand.filter(i => score(i) <= best2 + tol);
   return close[rand(close.length)];
@@ -512,7 +513,12 @@ function recommend() {
 }
 
 // ---------- controls ----------
-document.getElementById("shuffle").onclick = () => { seed++; recommend(); };
+let recent = [], recentIds = new Set();   // pieces from the last 3 outfits shown before a shuffle
+document.getElementById("shuffle").onclick = () => {
+  recent.push(lastLook.map(i => i.id)); recent = recent.slice(-3);
+  recentIds = new Set(recent.flat());
+  seed++; recommend();
+};
 // 👎: remember every pairing among the main pieces of this outfit so they aren't put together again
 document.getElementById("nope").onclick = () => {
   const main = lastLook.filter(i => ["top", "dress", "bottom", "shoes"].includes(i.cat));

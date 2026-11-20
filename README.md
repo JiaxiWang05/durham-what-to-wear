@@ -7,6 +7,8 @@ Outfit picks from your own wardrobe for today's weather in Durham, UK, with a fl
 - 打开 / Open: https://jiaxiwang05.github.io/durham-what-to-wear/
 - 天气来自 [Open-Meteo](https://open-meteo.com/)（免费，无需 key），按白天 08–20 点体感温度和降水概率推荐
 - **日常 / Go out ✨**：Go out 只选可爱款，里面按室内 15–22°C 搭配，外套按真实天气、优先可爱款
+- 天气主要决定外套：穿外套时里面厚薄都可以，所以上衣和下装不太受天气限制（只有热天会排除厚的）
+- 点「换一套」会避开前 3 套里出现过的衣服
 - 外套会在保暖度相近的几件里轮换；在场合里写了温度（如「20度」），外套也按这个温度选
 - 丝袜只在可爱风穿裙子时偶尔出现
 - **场合输入**：写下要去哪（中文或英文），按关键词调整推荐，例如「约会 室内20度」「去健身房」「面试」「圣诞市场 户外」「在家」「dinner, I feel the cold」
