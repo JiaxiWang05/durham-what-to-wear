@@ -202,7 +202,14 @@ async function getWeather() {
 }
 
 // ---------- rule-based recommendation ----------
-function rand(n) { seed = (seed * 9301 + 49297) % 233280; return Math.floor(seed / 233280 * n); }
+// `seed` counts shuffles; `rs` is the picker's own RNG state, re-derived from it on every recommend()
+let rs = 0;
+function rand(n) {
+  rs = (rs + 0x6D2B79F5) | 0;
+  let x = Math.imul(rs ^ (rs >>> 15), 1 | rs);
+  x ^= x + Math.imul(x ^ (x >>> 7), 61 | x);
+  return Math.floor((((x ^ (x >>> 14)) >>> 0) / 4294967296) * n);
+}
 function pick(cat, target, preferWP) {
   const pool = items.filter(i => i.cat === cat);
   if (!pool.length) return null;
@@ -213,6 +220,7 @@ function pick(cat, target, preferWP) {
 }
 function recommend() {
   if (!weather) return;
+  rs = Math.imul(seed + 1, 2654435761);
   const t = (weather.feelMin + weather.feelMax) / 2, wet = weather.rain >= 40;
   // target warmth per layer, by average daytime feels-like temperature
   let outer, top, bottom, needOuter = true, needAcc = false;
