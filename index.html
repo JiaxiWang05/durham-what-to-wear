@@ -29,10 +29,10 @@
   .chips button { padding:3px 10px; font-size:12px; border-radius:999px; background:var(--bg); color:var(--ink); border:1px solid var(--line); }
   #occInfo { margin-top:6px; }
   /* head-to-toe outfit: accessories, layers (coat · mid · top · base), bottoms, legwear, shoes */
-  .figure { margin: 10px auto 0; width: min(320px, 100%); display:grid; gap:6px; }
-  .upper { display:grid; grid-template-columns: 1fr 1fr; gap:6px; }
-  .upper.single { grid-template-columns: 1fr; width:60%; justify-self:center; }
-  .upper .slot { height:160px; }
+  .figure { margin: 10px auto 0; width: min(520px, 100%); display:grid; gap:6px; }
+  /* every upper-body layer side by side in one row, outermost on the left */
+  .upper { display:flex; gap:6px; justify-content:center; }
+  .upper .slot { flex:1 1 0; max-width:170px; height:170px; }
   .slot { background:var(--bg); border:1px dashed var(--line); border-radius:10px; min-height:90px;
           display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative; }
   .slot img { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; display:block; }
@@ -40,9 +40,9 @@
   .slot .role { position:absolute; top:4px; left:4px; font-size:10px; font-weight:600; color:#fff; background:var(--accent); padding:0 5px; border-radius:4px; }
   .accs { display:flex; gap:6px; justify-content:center; }
   .slot.acc { height:80px; min-height:0; flex:0 1 110px; }
-  .slot.bottom { height:170px; width:70%; justify-self:center; }
-  .slot.legs { height:110px; width:50%; justify-self:center; }
-  .slot.shoes { height:70px; min-height:0; width:60%; justify-self:center; }
+  .slot.bottom { height:180px; width:min(220px, 70%); justify-self:center; }
+  .slot.legs { height:110px; width:min(150px, 50%); justify-self:center; }
+  .slot.shoes { height:80px; min-height:0; width:min(190px, 60%); justify-self:center; }
   .tag { font-size:11px; color:var(--muted); }
   #tips { margin-top:10px; }
   .grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(140px,1fr)); gap:10px; }
@@ -448,7 +448,7 @@ function recommend() {
     look.base && slot(look.base, "base", R.base, C.top)
   ].filter(Boolean);
   fig.innerHTML = (look.acc.length ? `<div class="accs">${look.acc.map(a => slot(a, "acc", "", C.acc)).join("")}</div>` : "") +
-    `<div class="upper${cells.length === 1 ? " single" : ""}">${cells.join("")}</div>` +
+    `<div class="upper">${cells.join("")}</div>` +
     (dressDay ? "" : slot(look.bottom, "bottom", "", C.bottom)) +
     (look.legs ? slot(look.legs, "legs", "", C.legs) : "") + slot(look.shoes, "shoes", "", C.shoes);
   lastLook = Object.values(look).flat().filter(Boolean);
