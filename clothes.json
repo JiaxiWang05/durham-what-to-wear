@@ -26,5 +26,7 @@
   {"name": "波司登白色中长款鹅绒服", "cat": "outer", "warmth": 5, "waterproof": false, "color": "#f1eee8", "file": "bosideng-down-coat.jpg"},
   {"name": "灰色粗针织拉链开衫", "cat": "outer", "warmth": 3, "waterproof": false, "color": "#9a9a9a", "file": "grey-knit-zip-cardigan.jpg"},
   {"name": "Hollister 驼色圆领卫衣", "cat": "top", "warmth": 3, "waterproof": false, "color": "#c4a27a", "file": "hollister-sweatshirt.jpg"},
-  {"name": "梅赛德斯 F1 车队短袖球衣", "cat": "top", "warmth": 1, "waterproof": false, "color": "#222222", "file": "mercedes-f1-jersey.jpg"}
+  {"name": "梅赛德斯 F1 车队短袖球衣", "cat": "top", "warmth": 1, "waterproof": false, "color": "#222222", "file": "mercedes-f1-jersey.jpg"},
+  {"name": "Alexander Wang 白色短款羽绒服", "cat": "outer", "warmth": 4, "waterproof": false, "color": "#f2f2f0", "file": "aw-white-puffer.jpg"},
+  {"name": "玫粉雪纺蕾丝长裙", "cat": "dress", "warmth": 1, "waterproof": false, "color": "#b84a6e", "file": "rose-chiffon-maxi-dress.jpg", "cute": true}
 ]
