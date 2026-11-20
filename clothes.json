@@ -17,5 +17,6 @@
   {"name": "lululemon Scuba 藏青拉链卫衣", "cat": "outer", "warmth": 3, "waterproof": false, "color": "#1c2541", "file": "scuba-hoodie.jpg"},
   {"name": "蓝色阔腿卫裤", "cat": "bottom", "warmth": 3, "waterproof": false, "color": "#4a6f9c", "file": "blue-wide-leg-pants.jpg"},
   {"name": "灰色阔腿牛仔裤", "cat": "bottom", "warmth": 3, "waterproof": false, "color": "#8e8e8e", "file": "grey-wide-jeans.jpg"},
-  {"name": "白色 Polo 长袖衬衫", "cat": "top", "warmth": 2, "waterproof": false, "color": "#f7f7f7", "file": "white-polo-shirt.jpg"}
+  {"name": "白色 Polo 长袖衬衫", "cat": "top", "warmth": 2, "waterproof": false, "color": "#f7f7f7", "file": "white-polo-shirt.jpg"},
+  {"name": "灰色 Polo 华夫格长袖", "cat": "top", "warmth": 2, "waterproof": false, "color": "#a9a9a9", "file": "grey-polo-waffle-tee.jpg"}
 ]
