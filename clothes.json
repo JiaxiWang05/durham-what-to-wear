@@ -24,5 +24,7 @@
   {"name": "Gymshark 浅粉喇叭瑜伽裤", "cat": "bottom", "warmth": 2, "waterproof": false, "color": "#e6c9d8", "file": "pink-flared-leggings.jpg"},
   {"name": "Nike GT Hustle 3 灰蓝运动鞋", "cat": "shoes", "warmth": 3, "waterproof": false, "color": "#6b7a96", "file": "nike-gt-hustle-3.jpg"},
   {"name": "波司登白色中长款鹅绒服", "cat": "outer", "warmth": 5, "waterproof": false, "color": "#f1eee8", "file": "bosideng-down-coat.jpg"},
-  {"name": "灰色粗针织拉链开衫", "cat": "outer", "warmth": 3, "waterproof": false, "color": "#9a9a9a", "file": "grey-knit-zip-cardigan.jpg"}
+  {"name": "灰色粗针织拉链开衫", "cat": "outer", "warmth": 3, "waterproof": false, "color": "#9a9a9a", "file": "grey-knit-zip-cardigan.jpg"},
+  {"name": "Hollister 驼色圆领卫衣", "cat": "top", "warmth": 3, "waterproof": false, "color": "#c4a27a", "file": "hollister-sweatshirt.jpg"},
+  {"name": "梅赛德斯 F1 车队短袖球衣", "cat": "top", "warmth": 1, "waterproof": false, "color": "#222222", "file": "mercedes-f1-jersey.jpg"}
 ]
