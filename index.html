@@ -230,9 +230,11 @@ function recommend() {
     outer: needOuter ? pick("outer", outer, wet) : null,
     top: dressDay ? pick("dress", Math.min(top, bottom)) : pick("top", top),
     bottom: dressDay ? null : pick("bottom", bottom),
-    legs: dressDay || t < 10 ? pick("legs", 3) : null,
     shoes: pick("shoes", 3, wet)
   };
+  // tights only go under skirts and dresses, not trousers
+  const skirt = dressDay || /裙|skirt/i.test(look.bottom?.name || "");
+  look.legs = skirt && t < 15 ? pick("legs", 3) : null;
   const fig = document.getElementById("figure");
   const slot = k => {
     const it = look[k], label = (k === "top" && dressDay ? "连衣裙" : CATS[k]).split("(")[0];
