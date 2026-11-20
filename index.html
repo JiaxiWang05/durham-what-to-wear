@@ -372,7 +372,11 @@ function currentCtx() {
 }
 // warmth level (1–5) wanted for the coat and for the layers underneath, at a feels-like temperature
 const outerWarmth = t => t < 3 ? 5 : t < 6 ? 4 : t < 12 ? 3 : t < 17 ? 2 : null;
-const innerWarmth = t => t < 0 ? 4 : t < 12 ? 3 : t < 15 ? 2 : t < 20 ? 1.5 : 1;
+// tops and bottoms take a warmth *range*, not one exact level, so every piece that suits the day can come up.
+// Tops can be light even when it's cold (you're mostly indoors and the coat does the work outside);
+// bottoms aren't under the coat, so they stay warmer.
+const topRange    = t => t < 6 ? [1, 4] : t < 12 ? [1, 3] : t < 20 ? [1, 2] : [1, 1];
+const bottomRange = t => t < 6 ? [2, 4] : t < 12 ? [2, 3] : t < 17 ? [1, 3] : [1, 2];
 
 // candidates of a category, not in the wash; a style narrows the pool only when the wardrobe has that style
 function poolOf(filter, style) {
@@ -384,7 +388,7 @@ function choose(pool, score, rotate, tol = 0.5) {
   if (!pool.length) return null;
   const best = Math.min(...pool.map(score));
   // rotation: pieces not yet worn this cycle go first, as long as they still suit the weather
-  const fresh = rotate ? pool.filter(i => !worn.has(i.id) && score(i) <= Math.max(best, 1)) : [];
+  const fresh = rotate ? pool.filter(i => !worn.has(i.id) && score(i) <= best) : [];
   const cand = fresh.length ? fresh : pool;
   const best2 = Math.min(...cand.map(score));
   const close = cand.filter(i => score(i) <= best2 + tol);
@@ -392,7 +396,9 @@ function choose(pool, score, rotate, tol = 0.5) {
 }
 // `ok` narrows the pool further (style match, pattern clash, disliked pairs) when anything is left after it
 function pick(cat, target, preferWP, style, ok) {
-  const score = i => Math.abs(i.warmth - target) + (preferWP && !i.waterproof ? 1.5 : 0);
+  // target is a warmth level or a [lo, hi] range (anything inside the range scores 0)
+  const [lo, hi] = Array.isArray(target) ? target : [target, target];
+  const score = i => (i.warmth < lo ? lo - i.warmth : i.warmth > hi ? i.warmth - hi : 0) + (preferWP && !i.waterproof ? 1.5 : 0);
   let pool = poolOf(i => i.cat === cat, style);
   if (ok) {
     // keep the matching rules even if that means leaving the requested style; break them only as a last resort
@@ -427,7 +433,9 @@ function recommend() {
   const tCoat = ctx.tempGiven ? tIn : tOut;
   let outerT = ctx.home ? null : outerWarmth(tCoat);
   if (outerT == null && wet && !ctx.home) outerT = 1;
-  const inner = innerWarmth(tIn);
+  const tops = topRange(tIn);
+  // sport bottoms (leggings, joggers) are fine across the range; otherwise legs follow the bottom range
+  const bottoms = style === "sport" ? [1, 3] : bottomRange(tIn);
 
   // dress day: every other shuffle (2 in 3 for cute), never for sport or at home, always if there are no bottoms
   const hasDress = poolOf(i => i.cat === "dress", style).length > 0, hasBottom = poolOf(i => i.cat === "bottom").length > 0;
@@ -443,9 +451,9 @@ function recommend() {
   // cute outfits prefer a cute coat when one is warm enough
   look.outer = outerT != null ? pick("outer", outerT, wet, null,
     style === "cute" ? i => hasStyle(i, "cute") && Math.abs(i.warmth - outerT) <= 1 : null) : null;
-  look.top = pick(dressDay ? "dress" : "top", inner, false, style);
+  look.top = dressDay ? pick("dress", bottoms, false, style) : pick("top", tops, false, style);
   // bottoms share a style with the top and never add a second pattern; shoes match the top/dress and the bottoms
-  look.bottom = dressDay ? null : pick("bottom", inner, false, style, i => goesWith(look.top, i));
+  look.bottom = dressDay ? null : pick("bottom", bottoms, false, style, i => goesWith(look.top, i));
   look.shoes = pick("shoes", style === "cute" || style === "formal" ? 2 : 3, wet, style,
                     i => goesWith(look.top, i) && goesWith(look.bottom, i));
   // tights only go under skirts and dresses, not trousers
@@ -458,7 +466,7 @@ function recommend() {
   // long-sleeves are loose like the sweatshirts, so they're never paired.
   look.mid = !dressDay && tOut < 0 && look.outer?.warmth >= 4 ? pickLayer("mid", [look.outer], null) : null;
   const t0 = look.top;
-  const sweatCold = !dressDay && t0 && t0.warmth >= 3 && inner >= 3;
+  const sweatCold = !dressDay && t0 && t0.warmth >= 3 && tIn < 6;
   look.base = sweatCold ? pickLayer("base", [t0], null, i => !(i.pattern && (t0.pattern || look.bottom?.pattern))) : null;
 
   const fig = document.getElementById("figure");

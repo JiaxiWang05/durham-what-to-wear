@@ -1,7 +1,7 @@
 [
   {"name": "黑色刺绣蕾丝边上衣", "name_en": "Black embroidered lace-trim top", "cat": "top", "warmth": 1, "waterproof": false, "styles": ["cute"], "color": "#1f1f1f", "file": "black-lace-top.jpg", "pattern": true},
   {"name": "抹茶绿缎面吊带长裙", "name_en": "Matcha satin slip maxi dress", "cat": "dress", "warmth": 1, "waterproof": false, "styles": ["cute"], "color": "#b8d4bd", "file": "matcha-slip-dress.jpg"},
-  {"name": "奶油色蕾丝荷叶边衬衫", "name_en": "Cream lace ruffle blouse", "cat": "top", "warmth": 1, "waterproof": false, "styles": ["cute"], "color": "#efe6d2", "file": "cream-ruffle-blouse.jpg"},
+  {"name": "奶油色蕾丝荷叶边上衣", "name_en": "Cream lace ruffle top", "cat": "top", "warmth": 1, "waterproof": false, "styles": ["cute"], "color": "#efe6d2", "file": "cream-ruffle-blouse.jpg"},
   {"name": "灰格子露肩短上衣", "name_en": "Grey tartan off-shoulder crop top", "cat": "top", "warmth": 1, "waterproof": false, "styles": ["cute"], "color": "#6b6b5c", "file": "grey-tartan-crop.jpg", "pattern": true},
   {"name": "摩卡格子泡泡袖上衣", "name_en": "Mocha plaid puff-sleeve top", "cat": "top", "warmth": 1, "waterproof": false, "styles": ["cute"], "color": "#7a5a3a", "file": "mocha-plaid-top.jpg", "pattern": true},
   {"name": "米色小狗卫衣", "name_en": "Beige dog sweatshirt", "cat": "top", "warmth": 3, "waterproof": false, "styles": ["cute", "casual"], "color": "#ece2c8", "file": "dog-sweatshirt.jpg", "pattern": true},
