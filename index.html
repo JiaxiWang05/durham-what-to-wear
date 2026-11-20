@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>杜伦穿搭</title>
+<style>
+  :root { --bg:#f6f5f2; --card:#fff; --ink:#222; --muted:#777; --line:#e3e1dc; --accent:#2f6f5e; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#17181a; --card:#222427; --ink:#eee; --muted:#9a9a9a; --line:#33363a; --accent:#6cc3a8; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 -apple-system, "PingFang SC", system-ui, sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 16px; }
+  h1 { font-size: 22px; margin: 4px 0 12px; }
+  h2 { font-size: 16px; margin: 0 0 10px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; margin-bottom:14px; }
+  .muted { color:var(--muted); font-size:13px; }
+  button, select, input { font: inherit; }
+  button { background:var(--accent); color:#fff; border:0; border-radius:8px; padding:8px 14px; cursor:pointer; }
+  button.ghost { background:transparent; color:var(--accent); border:1px solid var(--accent); }
+  .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  #weather b { font-size: 26px; }
+  /* outfit preview: items stacked on a body-shaped column */
+  .figure { position:relative; margin: 8px auto 0; width: 260px; display:grid; gap:6px;
+            grid-template-columns: 1fr 1fr; grid-template-areas: "acc acc" "outer top" "bottom bottom" "shoes shoes"; }
+  .slot { background:var(--bg); border:1px dashed var(--line); border-radius:10px; min-height:90px;
+          display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative; }
+  .slot img { width:100%; height:100%; object-fit:cover; display:block; }
+  .slot span { position:absolute; bottom:2px; left:6px; font-size:11px; color:var(--muted); background:var(--card); padding:0 4px; border-radius:4px; }
+  .slot.acc { grid-area:acc; min-height:60px; } .slot.outer { grid-area:outer; min-height:150px; }
+  .slot.top { grid-area:top; min-height:150px; } .slot.bottom { grid-area:bottom; min-height:160px; width:70%; justify-self:center; }
+  .slot.shoes { grid-area:shoes; min-height:70px; width:60%; justify-self:center; }
+  #tips { margin-top:10px; }
+  .grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(140px,1fr)); gap:10px; }
+  .item { border:1px solid var(--line); border-radius:10px; overflow:hidden; background:var(--bg); }
+  .item img { width:100%; aspect-ratio:1; object-fit:cover; display:block; }
+  .item .meta { padding:6px; font-size:12px; display:grid; gap:4px; }
+  .item select, .item input[type=text] { width:100%; padding:3px; border:1px solid var(--line); border-radius:6px; background:var(--card); color:var(--ink); }
+  .item .del { background:transparent; color:#c44; padding:0; font-size:12px; text-align:left; }
+  label.up { display:inline-block; }
+  label.up input { display:none; }
+</style>
+</head>
+<body>
+<main>
+  <h1>杜伦今天穿什么</h1>
+
+  <section class="card" id="weather"><span class="muted">正在获取杜伦天气…</span></section>
+
+  <section class="card">
+    <div class="row" style="justify-content:space-between">
+      <h2>今日推荐</h2>
+      <button class="ghost" id="shuffle">换一套</button>
+    </div>
+    <div class="figure" id="figure"></div>
+    <div id="tips" class="muted"></div>
+  </section>
+
+  <section class="card">
+    <div class="row" style="justify-content:space-between">
+      <h2>我的衣服库 <span class="muted" id="count"></span></h2>
+      <label class="up"><input type="file" id="file" accept="image/*" multiple><button type="button" onclick="this.previousElementSibling.click()">+ 添加照片</button></label>
+    </div>
+    <p class="muted">每件衣服拍一张平铺照，上传后选类别和保暖度。照片只存在这个浏览器里，不会上传。</p>
+    <div class="grid" id="items"></div>
+  </section>
+</main>
+
+<script>
+const CATS = { outer:"外套", top:"上衣", bottom:"下装", shoes:"鞋", acc:"配饰(帽/围巾/手套)" };
+const WARM = ["", "1 很薄", "2 薄", "3 中等", "4 厚", "5 很厚"];
+let items = [], weather = null, seed = 0;
+
+// ---------- storage (IndexedDB, falls back to memory) ----------
+let db = null;
+function openDB() {
+  return new Promise(res => {
+    try {
+      const r = indexedDB.open("durham-wardrobe", 1);
+      r.onupgradeneeded = () => r.result.createObjectStore("items", { keyPath: "id" });
+      r.onsuccess = () => { db = r.result; res(); };
+      r.onerror = () => res();
+    } catch { res(); }
+  });
+}
+function tx(mode) { return db.transaction("items", mode).objectStore("items"); }
+function loadAll() {
+  return new Promise(res => {
+    if (!db) return res([]);
+    try { const r = tx("readonly").getAll(); r.onsuccess = () => res(r.result || []); r.onerror = () => res([]); }
+    catch { res([]); }
+  });
+}
+function save(it) { try { db && tx("readwrite").put(it); } catch {} }
+function remove(id) { try { db && tx("readwrite").delete(id); } catch {} }
+
+// ---------- photo upload (downscaled to keep storage small) ----------
+function shrink(file) {
+  return new Promise(res => {
+    const img = new Image();
+    img.onload = () => {
+      const s = Math.min(1, 600 / Math.max(img.width, img.height));
+      const c = document.createElement("canvas");
+      c.width = img.width * s; c.height = img.height * s;
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(img.src);
+      res(c.toDataURL("image/jpeg", 0.82));
+    };
+    img.src = URL.createObjectURL(file);
+  });
+}
+document.getElementById("file").onchange = async e => {
+  for (const f of e.target.files) {
+    const it = { id: Date.now() + Math.random().toString(36).slice(2), img: await shrink(f),
+                 cat: "top", warmth: 3, waterproof: false, name: "" };
+    items.push(it); save(it);
+  }
+  e.target.value = "";
+  renderItems(); recommend();
+};
+
+function renderItems() {
+  document.getElementById("count").textContent = `(${items.length} 件)`;
+  const box = document.getElementById("items");
+  box.innerHTML = "";
+  for (const it of items) {
+    const d = document.createElement("div");
+    d.className = "item";
+    d.innerHTML = `<img src="${it.img}" alt="">
+      <div class="meta">
+        <input type="text" placeholder="名字（可选）" value="${(it.name||"").replace(/"/g,"&quot;")}">
+        <select class="cat">${Object.entries(CATS).map(([k,v])=>`<option value="${k}" ${k===it.cat?"selected":""}>${v}</option>`).join("")}</select>
+        <select class="warm">${[1,2,3,4,5].map(w=>`<option value="${w}" ${w==it.warmth?"selected":""}>保暖 ${WARM[w]}</option>`).join("")}</select>
+        <label><input type="checkbox" class="wp" ${it.waterproof?"checked":""}> 防水</label>
+        <button class="del">删除</button>
+      </div>`;
+    const upd = () => { save(it); recommend(); };
+    d.querySelector("input[type=text]").onchange = e => { it.name = e.target.value; upd(); };
+    d.querySelector(".cat").onchange = e => { it.cat = e.target.value; upd(); };
+    d.querySelector(".warm").onchange = e => { it.warmth = +e.target.value; upd(); };
+    d.querySelector(".wp").onchange = e => { it.waterproof = e.target.checked; upd(); };
+    d.querySelector(".del").onclick = () => {
+      if (!confirm("删除这件衣服？")) return;
+      items = items.filter(x => x.id !== it.id); remove(it.id); renderItems(); recommend();
+    };
+    box.appendChild(d);
+  }
+}
+
+// ---------- Durham weather (Open-Meteo, no key) ----------
+async function getWeather() {
+  const url = "https://api.open-meteo.com/v1/forecast?latitude=54.7761&longitude=-1.5733" +
+    "&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m" +
+    "&hourly=apparent_temperature,precipitation_probability&timezone=Europe%2FLondon&forecast_days=1";
+  const el = document.getElementById("weather");
+  try {
+    const d = await (await fetch(url)).json();
+    const hrs = d.hourly.time.map((t,i)=>({h:+t.slice(11,13), feel:d.hourly.apparent_temperature[i], rain:d.hourly.precipitation_probability[i]}))
+                 .filter(x => x.h >= 8 && x.h <= 20);
+    const feelMin = Math.min(...hrs.map(x=>x.feel)), feelMax = Math.max(...hrs.map(x=>x.feel));
+    const rain = Math.max(...hrs.map(x=>x.rain));
+    weather = { now: d.current.temperature_2m, feelNow: d.current.apparent_temperature,
+                feelMin, feelMax, rain, wind: d.current.wind_speed_10m };
+    el.innerHTML = `<div class="row" style="justify-content:space-between">
+        <div><b>${weather.now.toFixed(0)}°C</b> <span class="muted">体感 ${weather.feelNow.toFixed(0)}°C · 风 ${weather.wind.toFixed(0)} km/h</span></div>
+        <div class="muted">白天体感 ${feelMin.toFixed(0)}~${feelMax.toFixed(0)}°C · 降水概率 ${rain}%</div></div>`;
+  } catch {
+    el.innerHTML = `<span class="muted">天气获取失败，先按 8°C 推荐。</span>`;
+    weather = { now: 8, feelNow: 8, feelMin: 6, feelMax: 10, rain: 0, wind: 0 };
+  }
+  recommend();
+}
+
+// ---------- rule-based recommendation ----------
+function rand(n) { seed = (seed * 9301 + 49297) % 233280; return Math.floor(seed / 233280 * n); }
+function pick(cat, target, preferWP) {
+  const pool = items.filter(i => i.cat === cat);
+  if (!pool.length) return null;
+  const score = i => Math.abs(i.warmth - target) + (preferWP && !i.waterproof ? 1.5 : 0);
+  const best = Math.min(...pool.map(score));
+  const close = pool.filter(i => score(i) <= best + 0.5);
+  return close[rand(close.length)];
+}
+function recommend() {
+  if (!weather) return;
+  const t = (weather.feelMin + weather.feelMax) / 2, wet = weather.rain >= 40;
+  // target warmth per layer, by average daytime feels-like temperature
+  let outer, top, bottom, needOuter = true, needAcc = false;
+  if (t < 0)       { outer = 5; top = 4; bottom = 4; needAcc = true; }
+  else if (t < 6)  { outer = 4; top = 3; bottom = 3; needAcc = t < 3; }
+  else if (t < 12) { outer = 3; top = 3; bottom = 3; }
+  else if (t < 17) { outer = 2; top = 2; bottom = 2; }
+  else             { needOuter = wet; outer = 1; top = 1; bottom = 1; }
+
+  const look = {
+    acc: needAcc ? pick("acc", 4) : null,
+    outer: needOuter ? pick("outer", outer, wet) : null,
+    top: pick("top", top), bottom: pick("bottom", bottom), shoes: pick("shoes", 3, wet)
+  };
+  const fig = document.getElementById("figure");
+  fig.innerHTML = Object.keys(CATS).map(k => {
+    const it = look[k];
+    const label = CATS[k].split("(")[0];
+    return `<div class="slot ${k}">${it ? `<img src="${it.img}" alt="">` : ""}<span>${it ? (it.name || label) : (k==="acc"&&!needAcc || k==="outer"&&!needOuter ? "不需要"+label : "没有"+label)}</span></div>`;
+  }).join("");
+
+  const tips = [];
+  if (!items.length) tips.push("先在下面上传你的衣服照片。");
+  tips.push(`白天平均体感约 ${t.toFixed(0)}°C。`);
+  if (t < 3) tips.push("很冷，记得围巾手套。");
+  if (wet) tips.push(`降水概率 ${weather.rain}%，穿防水外套/鞋或带伞。`);
+  if (weather.feelMax - weather.feelMin > 6) tips.push("早晚温差大，选能脱的外套。");
+  document.getElementById("tips").textContent = tips.join(" ");
+}
+document.getElementById("shuffle").onclick = () => { seed++; recommend(); };
+
+(async () => { await openDB(); items = await loadAll(); seed = new Date().getDate(); renderItems(); getWeather(); })();
+</script>
+</body>
+</html>
