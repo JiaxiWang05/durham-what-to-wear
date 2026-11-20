@@ -22,17 +22,18 @@
   .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
   #weather b { font-size: 26px; }
   /* outfit preview: items stacked on a body-shaped column */
-  .figure { margin: 8px auto 0; width: 260px; display:grid; gap:6px; }
-  .upper { position:relative; height:200px; }
-  .upper .slot { position:absolute; }
-  .upper .outer { inset:0; }
-  .upper .top { left:26%; width:48%; top:14%; bottom:0; box-shadow:0 2px 8px rgba(0,0,0,.25); border-style:solid; }
+  /* head-to-toe order: accessories, jacket | top, bottoms, legwear, shoes */
+  .figure { margin: 8px auto 0; width: min(300px, 100%); display:grid; gap:6px; }
+  .upper { display:grid; grid-template-columns: 1fr 1fr; gap:6px; }
+  .upper.single { grid-template-columns: 1fr; width:60%; justify-self:center; }
+  .upper .slot { height:170px; }
   .slot { background:var(--bg); border:1px dashed var(--line); border-radius:10px; min-height:90px;
           display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative; }
   .slot img { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; display:block; }
   .slot span { position:absolute; bottom:2px; left:6px; font-size:11px; color:var(--muted); background:var(--card); padding:0 4px; border-radius:4px; }
   .slot.acc { height:60px; min-height:0; width:60%; justify-self:center; }
   .slot.bottom { height:170px; width:70%; justify-self:center; }
+  .slot.legs { height:110px; width:50%; justify-self:center; }
   .slot.shoes { height:70px; min-height:0; width:60%; justify-self:center; }
   .tag { font-size:11px; color:var(--muted); }
   #tips { margin-top:10px; }
@@ -72,7 +73,7 @@
 </main>
 
 <script>
-const CATS = { outer:"外套", top:"上衣", dress:"连衣裙", bottom:"下装", shoes:"鞋", acc:"配饰(帽/围巾/手套/袜)" };
+const CATS = { outer:"外套", top:"上衣", dress:"连衣裙", bottom:"下装", legs:"袜子/打底", shoes:"鞋", acc:"配饰(帽/围巾/手套)" };
 const WARM = ["", "1 很薄", "2 薄", "3 中等", "4 厚", "5 很厚"];
 let items = [], weather = null, seed = 0;
 
@@ -228,15 +229,20 @@ function recommend() {
     acc: needAcc ? pick("acc", 4) : null,
     outer: needOuter ? pick("outer", outer, wet) : null,
     top: dressDay ? pick("dress", Math.min(top, bottom)) : pick("top", top),
-    bottom: dressDay ? null : pick("bottom", bottom), shoes: pick("shoes", 3, wet)
+    bottom: dressDay ? null : pick("bottom", bottom),
+    legs: dressDay || t < 10 ? pick("legs", 3) : null,
+    shoes: pick("shoes", 3, wet)
   };
   const fig = document.getElementById("figure");
   const slot = k => {
     const it = look[k], label = (k === "top" && dressDay ? "连衣裙" : CATS[k]).split("(")[0];
-    const none = (k==="acc"&&!needAcc) || (k==="outer"&&!needOuter) ? "不需要"+label : "没有"+label;
-    return `<div class="slot ${k}">${it ? `<img src="${it.img}" alt="">` : ""}<span>${it ? esc(it.name || label) : none}</span></div>`;
+    return `<div class="slot ${k}">${it ? `<img src="${it.img}" alt="">` : ""}<span>${it ? esc(it.name || label) : "没有" + label}</span></div>`;
   };
-  fig.innerHTML = slot("acc") + `<div class="upper">${slot("outer")}${slot("top")}</div>` + (dressDay ? "" : slot("bottom")) + slot("shoes");
+  // optional layers are left out when not needed or not owned; core pieces show "没有X" when missing
+  const upper = (needOuter ? slot("outer") : "") + slot("top");
+  fig.innerHTML = (look.acc ? slot("acc") : "") +
+    `<div class="upper${needOuter ? "" : " single"}">${upper}</div>` +
+    (dressDay ? "" : slot("bottom")) + (look.legs ? slot("legs") : "") + slot("shoes");
 
   const tips = [];
   if (dressDay && t < 10) tips.push("穿裙子记得加厚连裤袜。");
